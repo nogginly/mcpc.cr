@@ -7,7 +7,7 @@ authors:
 description: |
   A small pure-Crystal MCP client as a Crystal shard.
 
-crystal: ">= 1.22.0"
+crystal: ">= 1.20.0"
 
 development_dependencies:
   ameba:

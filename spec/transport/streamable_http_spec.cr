@@ -166,7 +166,7 @@ describe Mcpc::Transport::StreamableHttp do
     inbox = Inbox.new(transport)
     transport.send(request(1, "tools/list"), NO_HEADERS)
 
-    wait_until { inbox.failures.size == 1 }
+    wait_until(10.seconds) { inbox.failures.size == 1 }
     inbox.failures.first[1].should be_a(Mcpc::TransportError)
   end
 

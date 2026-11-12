@@ -123,13 +123,17 @@ bin/ameba src spec samples
 
 `.github/workflows/ci.yml` runs on every pull request and on every push to `main`.
 
-Job                |Runs
--------------------|--------------------------------------------------------------
-Specs and lint     |The format check, `crystal spec --order random`, then `ameba`
-Reference server   |The integration specs, against `server-everything` from npm
+Job               |Runs                                                  |On
+------------------|------------------------------------------------------|------------------------------------------
+Specs             |`crystal spec --order random`                         |Linux, macOS, Windows × Crystal 1.20, 1.21, latest
+Format and lint   |The format check, then `ameba`                        |Linux, latest Crystal
+Reference server  |The integration specs, against `server-everything`    |Linux, macOS, Windows, latest Crystal
 
-The second job downloads the reference server on each run, so it can fail for reasons that have
-nothing to do with your change. Re-run it before looking for a bug.
+1. The oldest Crystal in the matrix is the one `shard.yml` promises. Change them together.
+2. The reference-server job downloads from npm on each run, so it can fail for reasons that have
+   nothing to do with your change. Re-run it before looking for a bug.
+3. Specs must run on Windows: start helper processes through `sh` found on the `PATH`, never by
+   an absolute Unix path.
 
 ### Keeping the documents current
 
