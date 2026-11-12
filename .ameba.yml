@@ -1,0 +1,4 @@
+# Specs hold JSON test data in multi-line %() literals; heredocs would only add noise there.
+Style/MultilineStringLiteral:
+  Excluded:
+    - spec/**/*

@@ -1,7 +1,6 @@
 # Developing MCP Client
 
-> TODO: Document the developer instructions here. This is for future me and you and future contributors so we know how to build and test and develop / work on this project.
-
+How to build, test and change this shard. For how it works, see [DESIGN.md](DESIGN.md).
 
 ## Dependencies
 
@@ -19,6 +18,7 @@ Command               |Description
 `ops up`              |Gets everything setup, especially dependencies and `ameba` for linting.
 `ops specs`           |Run `crystal spec` on the test specs in `spec/`                        
 `ops lint`            |Run `ameba` on the source code                                         
+`ops integration`     |Run the specs that need the reference server (Node and network)        
 `ops test`            |Convenient actions to run tests specs and lint the code                
 `ops wipe`            |Clear Crystal build caches                                             
 `ops run CRYSTAL_FILE`|Build and run a Crystal app                                            
@@ -36,9 +36,96 @@ shards check || (shards install && mkdir -p bin && cp lib/ameba/bin/ameba.cr bin
 Command                      |Description                   
 -----------------------------|------------------------------
 `crystal --order random spec`|Run test specs in random order
-`bin/ameba src spec`         |Lint all source code          
+`bin/ameba src spec samples` |Lint all source code          
+`crystal tool format`        |Format all source code        
 `crystal clear_cache`        |Clear Crystal build caches    
 `crystal run CRYSTAL_FILE`   |Build and run a Crystal app   
+
+## Where things are
+
+Path                |Holds
+--------------------|----------------------------------------------------------------------
+`src/mcpc.cr`       |The requires, in dependency order
+`src/mcpc/`         |One small class or module per file; [DESIGN.md](DESIGN.md) maps them to layers
+`spec/`             |Specs, mirroring `src/mcpc/`
+`spec/support/`     |The fake servers the specs run against
+`spec/fixtures/`    |Example messages copied from the MCP specification
+`spec/integration/` |Specs against the real reference server
+`samples/`          |Runnable examples
+`references/`       |Notes on the protocol and the build brief
+
+## Testing
+
+### How the specs are arranged
+
+```mermaid
+flowchart TD
+    U["Unit specs<br/>json_rpc, transport, era"] --> F[FakeServer in memory]
+    C["Client specs<br/>client_spec, era/handshake, era/stateless"] --> F
+    H["HTTP specs<br/>streamable_http_spec, client_http_spec"] --> HF["HttpFakeServer<br/>a real HTTP::Server on a local port"]
+    HF --> F
+    S[stdio_spec] --> SH["/bin/sh scripts as servers"]
+    I["Integration specs<br/>opt-in"] --> R["server-everything via npx"]
+    style I stroke:#d68910,stroke-width:3px
+```
+
+1. `FakeServer` is a scripted MCP server. Register a block per method and its value becomes the
+   result. `FakeServer.legacy` and `FakeServer.modern` start you off with a server of each era.
+2. `FakeTransport` connects a client to a `FakeServer` in memory and records what was sent.
+3. `HttpFakeServer` serves the same `FakeServer` over real HTTP, as JSON or as an event stream.
+4. `client_spec.cr` runs its shared examples once per era. Behaviour that must not differ between
+   eras belongs there.
+
+### Things that will bite you
+
+1. A `FakeServer` handler that only raises does not compile into a working proc. Use
+   `server.fail_with(method, code, message)` to script an error.
+2. Use `wait_until { ... }` rather than `sleep` when waiting on another fiber.
+3. Never `not_nil!` in specs; `params_of(request)` and `result_of(response)` say what was missing.
+
+### Integration specs
+
+They run the reference server with `npx`, so they need Node and a network. They are pending unless
+you opt in:
+
+```sh
+MCPC_INTEGRATION=1 crystal spec --tag integration
+```
+
+### Fixtures
+
+`spec/fixtures/2026-07-28/` is a copy of `schema/2026-07-28/examples/` from the
+[specification repository](https://github.com/modelcontextprotocol/modelcontextprotocol). Copy the
+directory again to refresh it. Do not edit the files.
+
+## Working on the code
+
+1. **Check the specification first.** Before writing or changing a message, read its type in
+   `schema/<revision>/schema.ts`. Never invent a field.
+2. **Compile everything.** Crystal only type-checks code that is called, so a method without a
+   spec has not been checked at all.
+3. **Keep classes small.** One job per class, one class per file. If a method needs a paragraph of
+   comments, split it.
+4. **Comments describe use and outcome.** Say what a type or method is for and what it returns.
+   Inside a method, comment only to list the steps. History goes in commit messages.
+5. **Keep the eras apart.** Anything that differs between protocol eras belongs in `src/mcpc/era/`.
+   `Client`, the router and the transports must not ask which era they are in.
+6. **Never pretty-print** JSON that goes to a server. On stdio a newline ends the message.
+7. **Before you commit**, run the following, and expect no output from the middle two.
+
+```sh
+crystal spec --order random
+crystal tool format --check
+bin/ameba src spec samples
+```
+
+### Keeping the documents current
+
+Document                  |Update it when
+--------------------------|---------------------------------------------------------------
+[README.md](README.md)    |Anything an application can see changes: methods, events, errors, config
+[DESIGN.md](DESIGN.md)    |A layer, a decision or the "Not built" list changes
+DEVELOPMENT.md            |The way to build, test or lint changes
 
 ## Contributions
 

@@ -19,6 +19,9 @@ actions:
   specs:
     command: crystal spec --order random
     description: Run all test specs
+  integration:
+    command: MCPC_INTEGRATION=1 crystal spec --tag integration
+    description: Run the specs that need the reference server (Node and network)
   test:
-    command: ops test_specs && ops lint
+    command: ops specs && ops lint
     description: Run all tests and linter
