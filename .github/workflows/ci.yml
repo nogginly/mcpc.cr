@@ -1,0 +1,47 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Specs and lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crystal-lang/install-crystal@v1
+      - name: Install dependencies
+        run: shards install
+      - name: Check formatting
+        run: crystal tool format --check src spec samples
+      - name: Run specs
+        run: crystal spec --order random
+      - name: Build the linter
+        run: mkdir -p bin && cp lib/ameba/bin/ameba.cr bin && crystal build -o bin/ameba bin/ameba.cr
+      - name: Lint
+        run: bin/ameba src spec samples
+
+  integration:
+    name: Reference server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: crystal-lang/install-crystal@v1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: shards install
+      - name: Run specs against server-everything
+        run: crystal spec --tag integration
+        env:
+          MCPC_INTEGRATION: "1"

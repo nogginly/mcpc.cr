@@ -119,6 +119,18 @@ crystal tool format --check
 bin/ameba src spec samples
 ```
 
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and on every push to `main`.
+
+Job                |Runs
+-------------------|--------------------------------------------------------------
+Specs and lint     |The format check, `crystal spec --order random`, then `ameba`
+Reference server   |The integration specs, against `server-everything` from npm
+
+The second job downloads the reference server on each run, so it can fail for reasons that have
+nothing to do with your change. Re-run it before looking for a bug.
+
 ### Keeping the documents current
 
 Document                  |Update it when
