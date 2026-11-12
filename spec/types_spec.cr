@@ -2,7 +2,7 @@ require "./spec_helper"
 
 describe "result types, read from the specification's examples" do
   it "reads every Tool example" do
-    Dir.glob((FIXTURES / "Tool" / "*.json").to_s).each do |path|
+    fixture_paths("Tool").each do |path|
       tool = Mcpc::Tool.from_json(File.read(path))
       tool.name.should_not be_empty
       tool.input_schema["type"].should eq("object")
@@ -72,17 +72,17 @@ describe "result types, read from the specification's examples" do
 
   it "reads every example of the list results" do
     {"ListToolsResult" => {"tools", Mcpc::Tool}, "ListPromptsResult" => {"prompts", Mcpc::Prompt}}.each do |type, (key, _)|
-      Dir.glob((FIXTURES / type / "*.json").to_s).each do |path|
+      fixture_paths(type).each do |path|
         JSON.parse(File.read(path))[key].as_a.should_not be_empty
       end
     end
-    tools = JSON.parse(File.read(Dir.glob((FIXTURES / "ListToolsResult" / "*.json").to_s).first))["tools"]
+    tools = JSON.parse(File.read(fixture_paths("ListToolsResult").first))["tools"]
     Array(Mcpc::Tool).from_json(tools.to_json).first.name.should_not be_empty
-    prompts = JSON.parse(File.read(Dir.glob((FIXTURES / "ListPromptsResult" / "*.json").to_s).first))["prompts"]
+    prompts = JSON.parse(File.read(fixture_paths("ListPromptsResult").first))["prompts"]
     Array(Mcpc::Prompt).from_json(prompts.to_json).first.name.should_not be_empty
-    resources = JSON.parse(File.read(Dir.glob((FIXTURES / "ListResourcesResult" / "*.json").to_s).first))["resources"]
+    resources = JSON.parse(File.read(fixture_paths("ListResourcesResult").first))["resources"]
     Array(Mcpc::Resource).from_json(resources.to_json).first.uri.should_not be_empty
-    templates = JSON.parse(File.read(Dir.glob((FIXTURES / "ListResourceTemplatesResult" / "*.json").to_s).first))["resourceTemplates"]
+    templates = JSON.parse(File.read(fixture_paths("ListResourceTemplatesResult").first))["resourceTemplates"]
     Array(Mcpc::ResourceTemplate).from_json(templates.to_json).first.uri_template.should_not be_empty
   end
 

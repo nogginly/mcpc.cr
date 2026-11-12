@@ -133,7 +133,8 @@ Reference server  |The integration specs, against `server-everything`    |Linux,
 2. The reference-server job downloads from npm on each run, so it can fail for reasons that have
    nothing to do with your change. Re-run it before looking for a bug.
 3. Specs must run on Windows: start helper processes through `sh` found on the `PATH`, never by
-   an absolute Unix path.
+   an absolute Unix path, and find fixtures with `fixture_paths`, because a glob pattern cannot
+   hold Windows path separators.
 
 ### Keeping the documents current
 
