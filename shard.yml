@@ -1,0 +1,14 @@
+name: mcpc
+version: 0.1.0
+license: MPL-2.0
+authors:
+  - nogginly <nogginly@icloud.com>
+
+description: |
+  A small pure-Crystal MCP client as a Crystal shard.
+
+crystal: ">= 1.22.0"
+
+development_dependencies:
+  ameba:
+    github: crystal-ameba/ameba

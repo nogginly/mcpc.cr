@@ -1,0 +1,24 @@
+dependencies:
+  brew:
+    - crystal
+  custom:
+    - shards check || (shards install && mkdir -p bin && cp lib/ameba/bin/ameba.cr bin && crystal build -o bin/ameba bin/ameba.cr)
+hooks:
+  before:
+    - mkdir -p bin samples spec src
+actions:
+  run:
+    command: crystal run
+    description: Compile and run the source file
+  wipe:
+    command: crystal clear_cache
+    description: Clear build caches
+  lint:
+    command: bin/ameba src/ spec/ samples/
+    description: Run Crystal source linter (ameba)
+  specs:
+    command: crystal spec --order random
+    description: Run all test specs
+  test:
+    command: ops test_specs && ops lint
+    description: Run all tests and linter
