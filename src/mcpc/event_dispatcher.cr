@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Delivers events to the application's handler, in order, on a fiber of
   # its own. The handler may therefore call back into the client.
   class EventDispatcher

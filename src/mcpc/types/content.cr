@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # One block of a tool result or prompt message. Match on the concrete
   # type: `TextContent`, `ImageContent`, `AudioContent`, `ResourceLink`,
   # `EmbeddedResource`, or `UnknownContent` for types this shard predates.

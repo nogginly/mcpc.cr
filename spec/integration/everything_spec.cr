@@ -12,11 +12,11 @@ private def reference_server_command : {String, Array(String)}
   {% end %}
 end
 
-private def everything_client(& : Mcpc::Client, EventLog ->)
+private def everything_client(& : MCPC::Client, EventLog ->)
   pending!("set MCPC_INTEGRATION=1 to run against the reference server") unless ENV["MCPC_INTEGRATION"]?
   command, args = reference_server_command
-  transport = Mcpc::Transport::Stdio.new(command, args, stderr: Process::Redirect::Close)
-  client = Mcpc::Client.new(transport)
+  transport = MCPC::Transport::Stdio.new(command, args, stderr: Process::Redirect::Close)
+  client = MCPC::Client.new(transport)
   client.on_elicitation(&.accept({"name" => "Ada", "check" => true}))
   log = EventLog.new(client)
   begin
@@ -42,9 +42,9 @@ describe "the reference server, @modelcontextprotocol/server-everything", tags: 
     end
   end
 
-  it "raises RpcError for a method the server does not have" do
+  it "raises RPCError for a method the server does not have" do
     everything_client do |client|
-      expect_raises(Mcpc::RpcError) { client.request("no/such/method") }.code.should eq(-32601)
+      expect_raises(MCPC::RPCError) { client.request("no/such/method") }.code.should eq(-32601)
     end
   end
 
@@ -61,9 +61,9 @@ describe "the reference server, @modelcontextprotocol/server-everything", tags: 
 
   it "reports progress for a long-running tool" do
     everything_client do |client, log|
-      options = Mcpc::RequestOptions.new(progress_token: "job-1", timeout: 30.seconds)
+      options = MCPC::RequestOptions.new(progress_token: "job-1", timeout: 30.seconds)
       client.call_tool("trigger-long-running-operation", {"duration" => 1, "steps" => 2}, options)
-      log.await(Mcpc::Event::Progress).token.should eq("job-1")
+      log.await(MCPC::Event::Progress).token.should eq("job-1")
     end
   end
 

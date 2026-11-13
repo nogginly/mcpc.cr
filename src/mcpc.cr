@@ -3,7 +3,7 @@ require "log"
 require "./mcpc/version"
 require "./mcpc/errors"
 require "./mcpc/protocol"
-require "./mcpc/json"
+require "./mcpc/json_value"
 require "./mcpc/config"
 require "./mcpc/cancellation"
 require "./mcpc/request_options"
@@ -23,7 +23,7 @@ require "./mcpc/era/*"
 require "./mcpc/pagination"
 require "./mcpc/client"
 
-# A Model Context Protocol client. Start at `Mcpc::Client`.
-module Mcpc
+# A Model Context Protocol client. Start at `MCPC::Client`.
+module MCPC
   Log = ::Log.for("mcpc")
 end

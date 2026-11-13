@@ -1,13 +1,13 @@
-module McpcProbe
+module MCPCProbe
   # The server to probe: one at an HTTP address, or one to launch.
   abstract struct Target
     # How the report names the server.
     abstract def label : String
 
-    abstract def client(config : Mcpc::Config) : Mcpc::Client
+    abstract def client(config : MCPC::Config) : MCPC::Client
   end
 
-  struct HttpTarget < Target
+  struct HTTPTarget < Target
     getter url : String
     getter headers : Hash(String, String)
 
@@ -18,8 +18,8 @@ module McpcProbe
       url
     end
 
-    def client(config : Mcpc::Config) : Mcpc::Client
-      Mcpc::Client.http(url, headers, config)
+    def client(config : MCPC::Config) : MCPC::Client
+      MCPC::Client.http(url, headers, config)
     end
   end
 
@@ -34,8 +34,8 @@ module McpcProbe
       ([command] + args).join(' ')
     end
 
-    def client(config : Mcpc::Config) : Mcpc::Client
-      Mcpc::Client.stdio(command, args, config: config)
+    def client(config : MCPC::Config) : MCPC::Client
+      MCPC::Client.stdio(command, args, config: config)
     end
   end
 end

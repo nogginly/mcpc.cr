@@ -1,6 +1,6 @@
-module McpcProbe
+module MCPCProbe
   # Writes a report for a program to read.
-  class JsonRenderer
+  class JSONRenderer
     def initialize(@io : IO)
     end
 
@@ -19,7 +19,7 @@ module McpcProbe
       @io.puts
     end
 
-    private def server_fields(json : JSON::Builder, server : Mcpc::ServerInfo)
+    private def server_fields(json : JSON::Builder, server : MCPC::ServerInfo)
       json.field "protocolVersion", server.protocol_version
       json.field "stateless", server.stateless?
       json.field "serverName", server.implementation.try(&.name)

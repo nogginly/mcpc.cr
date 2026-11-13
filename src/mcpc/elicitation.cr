@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # A server's question for the user, in form mode: `message` says what is
   # wanted and `requested_schema` describes the fields of the answer.
   # Both are written by the server; treat them as untrusted.
@@ -12,7 +12,7 @@ module Mcpc
 
     # The user answered; *content* holds the fields the schema asked for.
     def accept(content) : ElicitationResponse
-      ElicitationResponse.new("accept", Json.any(content))
+      ElicitationResponse.new("accept", JSONValue.any(content))
     end
 
     # The user said no.

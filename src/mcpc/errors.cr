@@ -1,10 +1,10 @@
-module Mcpc
+module MCPC
   # Base class of every error this shard raises.
   class Error < Exception
   end
 
   # The server answered a request with a JSON-RPC error.
-  class RpcError < Error
+  class RPCError < Error
     getter code : Int32
     getter data : JSON::Any?
 
@@ -58,7 +58,7 @@ module Mcpc
   end
 
   # The server refused a request at the HTTP level.
-  class HttpError < TransportError
+  class HTTPError < TransportError
     getter status : Int32
     getter body : String
 
@@ -68,6 +68,6 @@ module Mcpc
   end
 
   # The server no longer recognises the HTTP session; connect again.
-  class SessionExpiredError < HttpError
+  class SessionExpiredError < HTTPError
   end
 end

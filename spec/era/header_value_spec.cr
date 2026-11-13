@@ -1,6 +1,6 @@
 require "../spec_helper"
 
-describe Mcpc::Era::HeaderValue do
+describe MCPC::Era::HeaderValue do
   # The encoding examples of the 2026-07-28 Streamable HTTP specification.
   {
     "us-west1"           => "us-west1",
@@ -12,7 +12,7 @@ describe Mcpc::Era::HeaderValue do
     "file:///a/b.json"   => "file:///a/b.json",
   }.each do |original, encoded|
     it "encodes #{original.inspect} as #{encoded}" do
-      Mcpc::Era::HeaderValue.encode(original).should eq(encoded)
+      MCPC::Era::HeaderValue.encode(original).should eq(encoded)
     end
   end
 end

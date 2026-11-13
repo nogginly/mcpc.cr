@@ -5,13 +5,13 @@
 # Needs Node, for `npx`.
 require "../src/mcpc"
 
-client = Mcpc::Client.stdio("npx", ["-y", "@modelcontextprotocol/server-everything"])
+client = MCPC::Client.stdio("npx", ["-y", "@modelcontextprotocol/server-everything"])
 
 client.on_event do |event|
   case event
-  when Mcpc::Event::Progress     then puts "  progress #{event.progress}/#{event.total}"
-  when Mcpc::Event::LogMessage   then puts "  server log [#{event.level}] #{event.data}"
-  when Mcpc::Event::Disconnected then puts "  disconnected: #{event.reason}"
+  when MCPC::Event::Progress     then puts "  progress #{event.progress}/#{event.total}"
+  when MCPC::Event::LogMessage   then puts "  server log [#{event.level}] #{event.data}"
+  when MCPC::Event::Disconnected then puts "  disconnected: #{event.reason}"
   else                                puts "  event: #{event.class.name}"
   end
 end
@@ -31,7 +31,7 @@ puts "Calling echo:"
 puts "  #{client.call_tool("echo", {"message" => "hello from Crystal"}).text}"
 
 puts "Calling a slow tool with progress:"
-options = Mcpc::RequestOptions.new(progress_token: "demo", timeout: 30.seconds)
+options = MCPC::RequestOptions.new(progress_token: "demo", timeout: 30.seconds)
 client.call_tool("trigger-long-running-operation", {"duration" => 2, "steps" => 4}, options)
 
 puts "Resources: #{client.list_resources.size}, prompts: #{client.list_prompts.size}"

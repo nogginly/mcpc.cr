@@ -23,7 +23,7 @@ macOS and Windows.
 ```crystal
 require "mcpc"
 
-client = Mcpc::Client.stdio("npx", ["-y", "@modelcontextprotocol/server-everything"])
+client = MCPC::Client.stdio("npx", ["-y", "@modelcontextprotocol/server-everything"])
 client.connect
 
 client.list_tools.each { |tool| puts tool.name }
@@ -37,7 +37,7 @@ client.close
 For a remote server, swap the first line. The rest stays the same.
 
 ```crystal
-client = Mcpc::Client.http("https://example.com/mcp", {"Authorization" => "Bearer #{token}"})
+client = MCPC::Client.http("https://example.com/mcp", {"Authorization" => "Bearer #{token}"})
 ```
 
 A runnable version is in [`samples/everything.cr`](samples/everything.cr).
@@ -89,10 +89,10 @@ if result.error?
 else
   result.content.each do |block|
     case block
-    when Mcpc::TextContent      then puts block.text
-    when Mcpc::ImageContent     then save(block.data, block.mime_type)
-    when Mcpc::ResourceLink     then puts "see #{block.uri}"
-    when Mcpc::EmbeddedResource then puts block.resource.text
+    when MCPC::TextContent      then puts block.text
+    when MCPC::ImageContent     then save(block.data, block.mime_type)
+    when MCPC::ResourceLink     then puts "see #{block.uri}"
+    when MCPC::EmbeddedResource then puts block.resource.text
     end
   end
   puts result.structured_content
@@ -106,14 +106,14 @@ Register one handler. It receives everything the server or the connection report
 ```crystal
 client.on_event do |event|
   case event
-  when Mcpc::Event::Progress           then puts "#{event.token}: #{event.progress} of #{event.total}"
-  when Mcpc::Event::LogMessage         then puts "[#{event.level}] #{event.data}"
-  when Mcpc::Event::ToolsChanged       then tools = client.list_tools
-  when Mcpc::Event::PromptsChanged     then prompts = client.list_prompts
-  when Mcpc::Event::ResourcesChanged   then resources = client.list_resources
-  when Mcpc::Event::ResourceUpdated    then client.read_resource(event.uri)
-  when Mcpc::Event::SubscriptionClosed then puts "subscription ended: #{event.reason}"
-  when Mcpc::Event::Disconnected       then puts "connection lost: #{event.reason}"
+  when MCPC::Event::Progress           then puts "#{event.token}: #{event.progress} of #{event.total}"
+  when MCPC::Event::LogMessage         then puts "[#{event.level}] #{event.data}"
+  when MCPC::Event::ToolsChanged       then tools = client.list_tools
+  when MCPC::Event::PromptsChanged     then prompts = client.list_prompts
+  when MCPC::Event::ResourcesChanged   then resources = client.list_resources
+  when MCPC::Event::ResourceUpdated    then client.read_resource(event.uri)
+  when MCPC::Event::SubscriptionClosed then puts "subscription ended: #{event.reason}"
+  when MCPC::Event::Disconnected       then puts "connection lost: #{event.reason}"
   end
 end
 ```
@@ -123,15 +123,15 @@ Events arrive in order on a fiber of their own, so the handler may call the clie
 ## Per-request options
 
 ```crystal
-cancellation = Mcpc::Cancellation.new
-options = Mcpc::RequestOptions.new(
+cancellation = MCPC::Cancellation.new
+options = MCPC::RequestOptions.new(
   timeout: 30.seconds,        # instead of Config#request_timeout
   progress_token: "import-1", # ask for Event::Progress carrying this token
   cancellation: cancellation, # lets another fiber give up on the call
 )
 
 spawn { client.call_tool("import", {"file" => "big.csv"}, options) }
-cancellation.cancel("user pressed stop")   # the call raises Mcpc::CancelledError
+cancellation.cancel("user pressed stop")   # the call raises MCPC::CancelledError
 ```
 
 A call that times out or is cancelled is also cancelled on the server.
@@ -154,7 +154,7 @@ The two protocol eras ask in different ways. The handler is the same for both.
 ## Change notifications
 
 ```crystal
-filter = Mcpc::SubscriptionFilter.new(tools: true, resource_uris: ["file:///notes/todo.md"])
+filter = MCPC::SubscriptionFilter.new(tools: true, resource_uris: ["file:///notes/todo.md"])
 subscription = client.subscribe(filter)
 subscription.filter   # what the server agreed to send
 # ... Event::ToolsChanged and Event::ResourceUpdated now arrive at on_event ...
@@ -166,11 +166,11 @@ subscribing.
 
 ## Errors
 
-Everything raised is an `Mcpc::Error`.
+Everything raised is an `MCPC::Error`.
 
 | Error | Meaning |
 |---|---|
-| `RpcError` | The server refused the request. Has `code` and `data`. |
+| `RPCError` | The server refused the request. Has `code` and `data`. |
 | `TimeoutError` | No answer in time. |
 | `CancelledError` | Your `Cancellation` was cancelled. |
 | `InputRequiredError` | The server wants input and there is no handler, or it kept asking. |
@@ -178,14 +178,14 @@ Everything raised is an `Mcpc::Error`.
 | `UnsupportedVersionError` | Client and server share no protocol revision. |
 | `TransportError` | The server could not be reached. |
 | `ConnectionClosedError` | The connection ended mid-request. A `TransportError`. |
-| `HttpError` | An HTTP refusal such as 401. Has `status` and `body`. A `TransportError`. |
-| `SessionExpiredError` | The HTTP session is gone; make a new client. An `HttpError`. |
+| `HTTPError` | An HTTP refusal such as 401. Has `status` and `body`. A `TransportError`. |
+| `SessionExpiredError` | The HTTP session is gone; make a new client. An `HTTPError`. |
 | `NotConnectedError` | Called before `connect` or after `close`. |
 
 ## Configuration
 
 ```crystal
-config = Mcpc::Config.new
+config = MCPC::Config.new
 config.client_name = "my-app"
 config.client_version = "1.2.0"
 config.request_timeout = 20.seconds  # default 60 s
@@ -193,7 +193,7 @@ config.probe_timeout = 2.seconds     # default 5 s; see below
 config.max_input_rounds = 4          # default 8
 config.log_level = "warning"         # ask for Event::LogMessage at this level and above
 
-client = Mcpc::Client.stdio("my-server", config: config)
+client = MCPC::Client.stdio("my-server", config: config)
 ```
 
 `probe_timeout` is how long `connect` waits for an older server to react to the modern greeting
@@ -202,8 +202,8 @@ before falling back. A stdio server that ignores unknown requests costs you that
 To send a stdio server's stderr somewhere other than your own, build the transport yourself:
 
 ```crystal
-transport = Mcpc::Transport::Stdio.new("my-server", stderr: File.open("server.log", "a"))
-client = Mcpc::Client.new(transport)
+transport = MCPC::Transport::Stdio.new("my-server", stderr: File.open("server.log", "a"))
+client = MCPC::Client.new(transport)
 ```
 
 ## Checking a server: `mcpc-probe`
@@ -269,7 +269,7 @@ A server started through a batch file, such as `npx`, must be launched through t
 interpreter, because Windows cannot run a batch file directly.
 
 ```crystal
-client = Mcpc::Client.stdio("cmd.exe", ["/c", "npx", "-y", "@modelcontextprotocol/server-everything"])
+client = MCPC::Client.stdio("cmd.exe", ["/c", "npx", "-y", "@modelcontextprotocol/server-everything"])
 ```
 
 ```sh

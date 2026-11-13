@@ -1,14 +1,14 @@
 require "./spec_helper"
 
-private def options(*arguments : String, environment = no_environment) : McpcProbe::Options
-  McpcProbe::Options.new(arguments.to_a, environment)
+private def options(*arguments : String, environment = no_environment) : MCPCProbe::Options
+  MCPCProbe::Options.new(arguments.to_a, environment)
 end
 
-private def http_target(*arguments : String, environment = no_environment) : McpcProbe::HttpTarget
-  options(*arguments, environment: environment).target.as(McpcProbe::HttpTarget)
+private def http_target(*arguments : String, environment = no_environment) : MCPCProbe::HTTPTarget
+  options(*arguments, environment: environment).target.as(MCPCProbe::HTTPTarget)
 end
 
-describe McpcProbe::Options do
+describe MCPCProbe::Options do
   it "takes a URL as an HTTP target" do
     target = http_target("https://example.com/mcp")
     target.url.should eq("https://example.com/mcp")
@@ -17,14 +17,14 @@ describe McpcProbe::Options do
   end
 
   it "takes everything after -- as a command, flags included" do
-    target = options("--json", "--", "npx", "-y", "some-server").target.as(McpcProbe::StdioTarget)
+    target = options("--json", "--", "npx", "-y", "some-server").target.as(MCPCProbe::StdioTarget)
     target.command.should eq("npx")
     target.args.should eq(["-y", "some-server"])
     target.label.should eq("npx -y some-server")
   end
 
   it "takes plain words as a command without --" do
-    target = options("my-server", "serve").target.as(McpcProbe::StdioTarget)
+    target = options("my-server", "serve").target.as(MCPCProbe::StdioTarget)
     target.command.should eq("my-server")
     target.args.should eq(["serve"])
   end
@@ -79,11 +79,11 @@ describe McpcProbe::Options do
     "a server flag before --"       => ["npx", "-y", "some-server"],
   }.each do |fault, arguments|
     it "rejects #{fault}" do
-      expect_raises(McpcProbe::UsageError) { McpcProbe::Options.new(arguments, no_environment) }
+      expect_raises(MCPCProbe::UsageError) { MCPCProbe::Options.new(arguments, no_environment) }
     end
   end
 
   it "suggests -- when a server's flag is mistaken for its own" do
-    expect_raises(McpcProbe::UsageError, "after `--`") { options("npx", "-y", "some-server") }
+    expect_raises(MCPCProbe::UsageError, "after `--`") { options("npx", "-y", "some-server") }
   end
 end

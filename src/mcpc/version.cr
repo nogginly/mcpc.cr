@@ -1,3 +1,3 @@
-module Mcpc
+module MCPC
   VERSION = {{ `shards version #{__DIR__}`.chomp.stringify }}
 end

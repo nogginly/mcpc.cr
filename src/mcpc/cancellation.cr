@@ -1,9 +1,9 @@
-module Mcpc
+module MCPC
   # Lets an application abandon a request that another fiber is waiting on.
   #
   # ```
-  # cancellation = Mcpc::Cancellation.new
-  # spawn { client.call_tool("slow", options: Mcpc::RequestOptions.new(cancellation: cancellation)) }
+  # cancellation = MCPC::Cancellation.new
+  # spawn { client.call_tool("slow", options: MCPC::RequestOptions.new(cancellation: cancellation)) }
   # cancellation.cancel("user pressed stop")
   # ```
   #

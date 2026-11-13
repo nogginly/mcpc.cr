@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Runs the server as a subprocess and exchanges newline-delimited JSON
   # over its standard input and output.
   class Transport::Stdio < Transport
@@ -19,7 +19,7 @@ module Mcpc
       raise TransportError.new("cannot start #{@command}: #{error.message}")
     end
 
-    def send(message : JsonRpc::Message, headers : Headers) : Nil
+    def send(message : JSONRPC::Message, headers : Headers) : Nil
       input = running_process.input
       @write_lock.synchronize do
         input.puts(message.to_json)
@@ -55,8 +55,8 @@ module Mcpc
 
     private def deliver_line(line : String)
       return if line.blank?
-      deliver(JsonRpc.parse(line))
-    rescue error : JsonRpc::InvalidMessage | JSON::SerializableError
+      deliver(JSONRPC.parse(line))
+    rescue error : JSONRPC::InvalidMessage | JSON::SerializableError
       Log.warn { "ignored a line from the server that is not JSON-RPC: #{error.message}" }
     end
 

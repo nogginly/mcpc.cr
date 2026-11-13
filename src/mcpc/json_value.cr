@@ -1,9 +1,9 @@
-module Mcpc
+module MCPC
   # The `params` object of a JSON-RPC message.
   alias Params = Hash(String, JSON::Any)
 
   # Conversions between application values and `JSON::Any`.
-  module Json
+  module JSONValue
     # Returns *value* as `JSON::Any`; accepts anything that responds to `to_json`.
     def self.any(value) : JSON::Any
       value.is_a?(JSON::Any) ? value : JSON.parse(value.to_json)

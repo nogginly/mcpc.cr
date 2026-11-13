@@ -1,10 +1,10 @@
 require "../spec_helper"
 
-private def sent_notifications(transport : FakeTransport, method : String) : Array(Mcpc::JsonRpc::Notification)
-  transport.sent.map(&.[0]).select(Mcpc::JsonRpc::Notification).select { |notification| notification.method == method }
+private def sent_notifications(transport : FakeTransport, method : String) : Array(MCPC::JSONRPC::Notification)
+  transport.sent.map(&.[0]).select(MCPC::JSONRPC::Notification).select { |notification| notification.method == method }
 end
 
-private def meta_of(request : Mcpc::JsonRpc::Request) : JSON::Any
+private def meta_of(request : MCPC::JSONRPC::Request) : JSON::Any
   params_of(request)["_meta"]
 end
 
@@ -25,7 +25,7 @@ private def listening_server(release : Channel(Bool)) : FakeServer
   end
 end
 
-describe Mcpc::Era::Stateless do
+describe MCPC::Era::Stateless do
   it "makes every request describe itself" do
     server = FakeServer.modern
     server.on("tools/list") { {"tools" => [] of String} }
@@ -48,7 +48,7 @@ describe Mcpc::Era::Stateless do
       client.connect
       client.list_tools
       server.requests.map(&.method).should eq(["server/discover", "tools/list"])
-      transport.sent.map(&.[0]).select(Mcpc::JsonRpc::Notification).should be_empty
+      transport.sent.map(&.[0]).select(MCPC::JSONRPC::Notification).should be_empty
     end
   end
 
@@ -57,7 +57,7 @@ describe Mcpc::Era::Stateless do
     server.on("tools/call") { text_result("ok") }
     connected_client(server) do |client|
       client.connect
-      client.call_tool("slow", options: Mcpc::RequestOptions.new(progress_token: "job-1"))
+      client.call_tool("slow", options: MCPC::RequestOptions.new(progress_token: "job-1"))
 
       meta = meta_of(server.last_request("tools/call"))
       meta["progressToken"].should eq("job-1")
@@ -161,7 +161,7 @@ describe Mcpc::Era::Stateless do
       config = fast_config.tap(&.max_input_rounds=(4))
       connected_client(server, config) do |client|
         client.connect
-        expect_raises(Mcpc::InputRequiredError) { client.call_tool("busy") }
+        expect_raises(MCPC::InputRequiredError) { client.call_tool("busy") }
         server.requests_for("tools/call").size.should eq(4)
       end
     end
@@ -171,7 +171,7 @@ describe Mcpc::Era::Stateless do
       server.on("tools/call") { {"resultType" => "input_required", "inputRequests" => {"guests" => ELICIT_GUESTS}} }
       connected_client(server) do |client|
         client.connect
-        expect_raises(Mcpc::InputRequiredError, "elicitation/create") { client.call_tool("book_table") }
+        expect_raises(MCPC::InputRequiredError, "elicitation/create") { client.call_tool("book_table") }
       end
     end
 
@@ -185,7 +185,7 @@ describe Mcpc::Era::Stateless do
       connected_client(server) do |client|
         client.on_elicitation(&.accept({} of String => String))
         client.connect
-        expect_raises(Mcpc::InputRequiredError, "url elicitation") { client.call_tool("login") }
+        expect_raises(MCPC::InputRequiredError, "url elicitation") { client.call_tool("login") }
       end
     end
   end
@@ -196,8 +196,8 @@ describe Mcpc::Era::Stateless do
       server.on("tools/call") { FakeServer::SILENT }
       connected_client(server) do |client, transport|
         client.connect
-        expect_raises(Mcpc::TimeoutError) do
-          client.call_tool("slow", options: Mcpc::RequestOptions.new(timeout: 20.milliseconds))
+        expect_raises(MCPC::TimeoutError) do
+          client.call_tool("slow", options: MCPC::RequestOptions.new(timeout: 20.milliseconds))
         end
 
         cancelled = params_of(sent_notifications(transport, "notifications/cancelled").first)
@@ -211,8 +211,8 @@ describe Mcpc::Era::Stateless do
       connected_client(server) do |client, transport|
         transport.aborts_requests = true
         client.connect
-        expect_raises(Mcpc::TimeoutError) do
-          client.call_tool("slow", options: Mcpc::RequestOptions.new(timeout: 20.milliseconds))
+        expect_raises(MCPC::TimeoutError) do
+          client.call_tool("slow", options: MCPC::RequestOptions.new(timeout: 20.milliseconds))
         end
 
         transport.aborted.should eq([server.last_request("tools/call").id])
@@ -227,7 +227,7 @@ describe Mcpc::Era::Stateless do
       server = listening_server(release)
       connected_client(server) do |client|
         client.connect
-        subscription = client.subscribe(Mcpc::SubscriptionFilter.new(tools: true, prompts: true))
+        subscription = client.subscribe(MCPC::SubscriptionFilter.new(tools: true, prompts: true))
 
         listen = params_of(server.last_request("subscriptions/listen"))
         listen["notifications"]["toolsListChanged"].should be_true
@@ -245,10 +245,10 @@ describe Mcpc::Era::Stateless do
       connected_client(server) do |client|
         log = EventLog.new(client)
         client.connect
-        client.subscribe(Mcpc::SubscriptionFilter.new(tools: true))
+        client.subscribe(MCPC::SubscriptionFilter.new(tools: true))
 
         server.push("notifications/tools/list_changed", {"_meta" => {"io.modelcontextprotocol/subscriptionId" => 2}})
-        log.await(Mcpc::Event::ToolsChanged)
+        log.await(MCPC::Event::ToolsChanged)
         release.close
       end
     end
@@ -259,13 +259,13 @@ describe Mcpc::Era::Stateless do
       connected_client(server) do |client, transport|
         log = EventLog.new(client)
         client.connect
-        subscription = client.subscribe(Mcpc::SubscriptionFilter.new(tools: true))
+        subscription = client.subscribe(MCPC::SubscriptionFilter.new(tools: true))
 
         subscription.close
         cancelled = params_of(sent_notifications(transport, "notifications/cancelled").first)
         cancelled["requestId"].should eq(server.last_request("subscriptions/listen").id)
         sleep 10.milliseconds
-        log.of(Mcpc::Event::SubscriptionClosed).should be_empty
+        log.of(MCPC::Event::SubscriptionClosed).should be_empty
         release.close
       end
     end
@@ -276,10 +276,10 @@ describe Mcpc::Era::Stateless do
       connected_client(server) do |client|
         log = EventLog.new(client)
         client.connect
-        client.subscribe(Mcpc::SubscriptionFilter.new(tools: true))
+        client.subscribe(MCPC::SubscriptionFilter.new(tools: true))
 
         release.send(true)
-        log.await(Mcpc::Event::SubscriptionClosed).reason.should be_nil
+        log.await(MCPC::Event::SubscriptionClosed).reason.should be_nil
       end
     end
 
@@ -289,10 +289,10 @@ describe Mcpc::Era::Stateless do
       connected_client(server) do |client|
         log = EventLog.new(client)
         client.connect
-        client.subscribe(Mcpc::SubscriptionFilter.new(tools: true))
+        client.subscribe(MCPC::SubscriptionFilter.new(tools: true))
 
         server.push("notifications/cancelled", {"requestId" => server.last_request("subscriptions/listen").id, "reason" => "shutting down"})
-        log.await(Mcpc::Event::SubscriptionClosed).reason.should eq("shutting down")
+        log.await(MCPC::Event::SubscriptionClosed).reason.should eq("shutting down")
         release.close
       end
     end
@@ -303,9 +303,9 @@ describe Mcpc::Era::Stateless do
       connected_client(server) do |client|
         log = EventLog.new(client)
         client.connect
-        expect_raises(Mcpc::RpcError, "Method not found") { client.subscribe(Mcpc::SubscriptionFilter.new(tools: true)) }
+        expect_raises(MCPC::RPCError, "Method not found") { client.subscribe(MCPC::SubscriptionFilter.new(tools: true)) }
         sleep 10.milliseconds
-        log.of(Mcpc::Event::SubscriptionClosed).should be_empty
+        log.of(MCPC::Event::SubscriptionClosed).should be_empty
       end
     end
 
@@ -315,7 +315,7 @@ describe Mcpc::Era::Stateless do
       config = fast_config.tap(&.request_timeout=(30.milliseconds))
       connected_client(server, config) do |client, transport|
         client.connect
-        expect_raises(Mcpc::TimeoutError) { client.subscribe(Mcpc::SubscriptionFilter.new(tools: true)) }
+        expect_raises(MCPC::TimeoutError) { client.subscribe(MCPC::SubscriptionFilter.new(tools: true)) }
         sent_notifications(transport, "notifications/cancelled").size.should eq(1)
       end
     end

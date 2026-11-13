@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # The `_meta` entries a 2026-07-28 server requires on every request.
     class RequestMeta
@@ -13,7 +13,7 @@ module Mcpc
 
       # Returns *params* carrying the required entries and those of *options*.
       def apply(params : Params, options = RequestOptions.new) : Params
-        Json.with_meta(params, @entries.merge(options.meta))
+        JSONValue.with_meta(params, @entries.merge(options.meta))
       end
     end
   end

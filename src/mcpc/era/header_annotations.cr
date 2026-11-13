@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # The `x-mcp-header` annotations of one tool's input schema: which
     # arguments a server wants mirrored into `Mcp-Param-*` headers.
@@ -8,7 +8,7 @@ module Mcpc
       MIRRORED_TYPES = {"string", "integer", "boolean"}
 
       # The annotations break a rule of the specification.
-      class Invalid < Mcpc::ProtocolError
+      class Invalid < MCPC::ProtocolError
       end
 
       # Maps the property path of each annotated argument to its header name suffix.

@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Settings a client is created with. Change them before `Client#connect`.
   class Config
     # How this client names itself to servers.
@@ -19,7 +19,7 @@ module Mcpc
     property log_level : String? = nil
 
     def client_info : JSON::Any
-      Json.any({"name" => client_name, "version" => client_version})
+      JSONValue.any({"name" => client_name, "version" => client_version})
     end
   end
 end

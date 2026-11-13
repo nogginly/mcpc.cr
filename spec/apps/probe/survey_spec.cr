@@ -1,6 +1,6 @@
 require "./spec_helper"
 
-describe McpcProbe::Survey do
+describe MCPCProbe::Survey do
   it "collects every list a server advertises" do
     report, _ = survey(well_stocked_server)
 

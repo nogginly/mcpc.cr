@@ -1,12 +1,12 @@
 require "http/client"
 require "uri"
 
-module Mcpc
+module MCPC
   # Talks to a server's single MCP endpoint, one HTTP POST per message.
   #
   # A session id issued by a handshake-era server is remembered and sent on
   # every later request; `close` ends that session.
-  class Transport::StreamableHttp < Transport
+  class Transport::StreamableHTTP < Transport
     SESSION_HEADER = "Mcp-Session-Id"
     ACCEPT_BOTH    = "application/json, text/event-stream"
     ACCEPT_STREAM  = "text/event-stream"
@@ -15,8 +15,8 @@ module Mcpc
     def initialize(url : String, @headers : Headers = Headers.new)
       @uri = URI.parse(url)
       @session_id = nil.as(String?)
-      @streams = {} of JsonRpc::Id => HTTP::Client
-      @aborted = Set(JsonRpc::Id).new
+      @streams = {} of JSONRPC::Id => HTTP::Client
+      @aborted = Set(JSONRPC::Id).new
       @server_stream = nil.as(HTTP::Client?)
       @lock = Mutex.new
       @closed = false
@@ -31,18 +31,18 @@ module Mcpc
 
     # A request is answered on its own fiber, so the caller never waits on
     # the network. Other messages are posted before this method returns.
-    def send(message : JsonRpc::Message, headers : Headers) : Nil
+    def send(message : JSONRPC::Message, headers : Headers) : Nil
       case message
-      in JsonRpc::Request
+      in JSONRPC::Request
         spawn(name: "mcpc-http-request") { exchange(message, headers) }
-      in JsonRpc::Notification, JsonRpc::Response
+      in JSONRPC::Notification, JSONRPC::Response
         post_one_way(message, headers)
       end
     end
 
     # Closes the response stream of request *id*, which a 2026-07-28 server
     # treats as cancellation.
-    def abort(id : JsonRpc::Id) : Bool
+    def abort(id : JSONRPC::Id) : Bool
       connection = @lock.synchronize do
         @streams.delete(id).tap { |found| @aborted << id if found }
       end
@@ -66,12 +66,12 @@ module Mcpc
       closed
     end
 
-    private def exchange(request : JsonRpc::Request, headers : Headers)
+    private def exchange(request : JSONRPC::Request, headers : Headers)
       connection = track(request.id)
       answered = false
       connection.post(@uri.request_target, request_headers(headers, ACCEPT_BOTH), request.to_json) do |response|
         remember_session(response)
-        HttpReply.new(response, session_active?).each_message do |message|
+        HTTPReply.new(response, session_active?).each_message do |message|
           answered ||= answers?(message, request)
           deliver(message)
         end
@@ -86,7 +86,7 @@ module Mcpc
     private def post_one_way(message, headers : Headers)
       connection = HTTP::Client.new(@uri)
       connection.post(@uri.request_target, request_headers(headers, ACCEPT_BOTH), message.to_json) do |response|
-        HttpReply.new(response, session_active?).expect_accepted
+        HTTPReply.new(response, session_active?).expect_accepted
       end
     rescue error : IO::Error | Socket::Error
       raise as_transport_error(error)
@@ -100,9 +100,9 @@ module Mcpc
       @server_stream = connection
       connection.get(@uri.request_target, request_headers(headers, ACCEPT_STREAM)) do |response|
         next unless response.success? && response.content_type == ACCEPT_STREAM
-        SseReader.new(response.body_io).each_message { |data| deliver(JsonRpc.parse(data)) }
+        SSEReader.new(response.body_io).each_message { |data| deliver(JSONRPC.parse(data)) }
       end
-    rescue error : IO::Error | Socket::Error | JsonRpc::InvalidMessage
+    rescue error : IO::Error | Socket::Error | JSONRPC::InvalidMessage
       Log.debug { "server stream ended: #{error.message}" }
     end
 
@@ -131,19 +131,19 @@ module Mcpc
       !@session_id.nil?
     end
 
-    private def answers?(message : JsonRpc::Message, request : JsonRpc::Request) : Bool
-      message.is_a?(JsonRpc::Response) && message.id == request.id
+    private def answers?(message : JSONRPC::Message, request : JSONRPC::Request) : Bool
+      message.is_a?(JSONRPC::Response) && message.id == request.id
     end
 
-    private def track(id : JsonRpc::Id) : HTTP::Client
+    private def track(id : JSONRPC::Id) : HTTP::Client
       HTTP::Client.new(@uri).tap { |connection| @lock.synchronize { @streams[id] = connection } }
     end
 
-    private def untrack(id : JsonRpc::Id)
+    private def untrack(id : JSONRPC::Id)
       @lock.synchronize { @streams.delete(id) }.try(&.close)
     end
 
-    private def aborted?(id : JsonRpc::Id) : Bool
+    private def aborted?(id : JSONRPC::Id) : Bool
       @lock.synchronize { @aborted.delete(id) }
     end
 

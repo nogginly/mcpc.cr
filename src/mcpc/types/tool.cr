@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # A server's hints about a tool's behaviour. Hints from an untrusted
   # server are untrusted.
   struct ToolAnnotations

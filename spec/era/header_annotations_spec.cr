@@ -1,7 +1,7 @@
 require "../spec_helper"
 
-private def annotations(schema : String) : Mcpc::Era::HeaderAnnotations
-  Mcpc::Era::HeaderAnnotations.new(JSON.parse(schema))
+private def annotations(schema : String) : MCPC::Era::HeaderAnnotations
+  MCPC::Era::HeaderAnnotations.new(JSON.parse(schema))
 end
 
 private def mirror(schema : String, arguments : String) : Hash(String, String)
@@ -12,7 +12,7 @@ private REGION_SCHEMA = %({"type":"object","properties":{
   "region":{"type":"string","x-mcp-header":"Region"},
   "query":{"type":"string"}}})
 
-describe Mcpc::Era::HeaderAnnotations do
+describe MCPC::Era::HeaderAnnotations do
   it "mirrors an annotated argument into its header" do
     mirror(REGION_SCHEMA, %({"region":"us-west1","query":"SELECT 1"})).should eq({"Mcp-Param-Region" => "us-west1"})
   end
@@ -64,7 +64,7 @@ describe Mcpc::Era::HeaderAnnotations do
       {"properties":{"a":{"type":"string","x-mcp-header":"A"}}}]}),
   }.each do |fault, schema|
     it "rejects #{fault}" do
-      expect_raises(Mcpc::Era::HeaderAnnotations::Invalid) { annotations(schema) }
+      expect_raises(MCPC::Era::HeaderAnnotations::Invalid) { annotations(schema) }
     end
   end
 end

@@ -1,10 +1,10 @@
 require "../spec_helper"
 
-private def sent_notifications(transport : FakeTransport, method : String) : Array(Mcpc::JsonRpc::Notification)
-  transport.sent.map(&.[0]).select(Mcpc::JsonRpc::Notification).select { |notification| notification.method == method }
+private def sent_notifications(transport : FakeTransport, method : String) : Array(MCPC::JSONRPC::Notification)
+  transport.sent.map(&.[0]).select(MCPC::JSONRPC::Notification).select { |notification| notification.method == method }
 end
 
-describe Mcpc::Era::Handshake do
+describe MCPC::Era::Handshake do
   it "initializes, then announces that it is ready" do
     server = FakeServer.legacy
     connected_client(server) do |client, transport|
@@ -13,7 +13,7 @@ describe Mcpc::Era::Handshake do
       opening = params_of(server.last_request("initialize"))
       opening["protocolVersion"].should eq("2025-11-25")
       opening["capabilities"].should eq(JSON.parse("{}"))
-      opening["clientInfo"].should eq(JSON.parse(%({"name":"mcpc","version":"#{Mcpc::VERSION}"})))
+      opening["clientInfo"].should eq(JSON.parse(%({"name":"mcpc","version":"#{MCPC::VERSION}"})))
       sent_notifications(transport, "notifications/initialized").size.should eq(1)
     end
   end
@@ -119,14 +119,14 @@ describe Mcpc::Era::Handshake do
     server.on("tools/call") { FakeServer::SILENT }
     connected_client(server) do |client, transport|
       client.connect
-      cancellation = Mcpc::Cancellation.new
+      cancellation = MCPC::Cancellation.new
       spawn do
         wait_until { server.requests_for("tools/call").size == 1 }
         cancellation.cancel("user pressed stop")
       end
 
-      expect_raises(Mcpc::CancelledError) do
-        client.call_tool("slow", options: Mcpc::RequestOptions.new(cancellation: cancellation))
+      expect_raises(MCPC::CancelledError) do
+        client.call_tool("slow", options: MCPC::RequestOptions.new(cancellation: cancellation))
       end
       cancelled = params_of(sent_notifications(transport, "notifications/cancelled").first)
       cancelled["requestId"].should eq(server.last_request("tools/call").id)
@@ -139,8 +139,8 @@ describe Mcpc::Era::Handshake do
     server.on("tools/call") { FakeServer::SILENT }
     connected_client(server) do |client, transport|
       client.connect
-      expect_raises(Mcpc::TimeoutError) do
-        client.call_tool("slow", options: Mcpc::RequestOptions.new(timeout: 20.milliseconds))
+      expect_raises(MCPC::TimeoutError) do
+        client.call_tool("slow", options: MCPC::RequestOptions.new(timeout: 20.milliseconds))
       end
       sent_notifications(transport, "notifications/cancelled").size.should eq(1)
     end
@@ -171,7 +171,7 @@ describe Mcpc::Era::Handshake do
     server.on("resources/unsubscribe") { {} of String => String }
     connected_client(server) do |client|
       client.connect
-      filter = Mcpc::SubscriptionFilter.new(tools: true, resource_uris: ["file:///a", "file:///b"])
+      filter = MCPC::SubscriptionFilter.new(tools: true, resource_uris: ["file:///a", "file:///b"])
       subscription = client.subscribe(filter)
 
       subscription.filter.should eq(filter)

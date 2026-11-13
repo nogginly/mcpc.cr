@@ -1,17 +1,17 @@
 require "../spec_helper"
 
-private def router_with(server : FakeServer) : {Mcpc::JsonRpc::Router, FakeTransport}
+private def router_with(server : FakeServer) : {MCPC::JSONRPC::Router, FakeTransport}
   transport = FakeTransport.new(server)
-  {Mcpc::JsonRpc::Router.new(transport), transport}
+  {MCPC::JSONRPC::Router.new(transport), transport}
 end
 
-describe Mcpc::JsonRpc::Router do
+describe MCPC::JSONRPC::Router do
   it "returns the result of the response with the matching id" do
     server = FakeServer.new
     server.on("echo", &.params)
     router, _ = router_with(server)
 
-    router.open("echo", Mcpc::Params{"n" => JSON::Any.new(1_i64)}).await.should eq(JSON.parse(%({"n":1})))
+    router.open("echo", MCPC::Params{"n" => JSON::Any.new(1_i64)}).await.should eq(JSON.parse(%({"n":1})))
   end
 
   it "gives each request its own id" do
@@ -37,12 +37,12 @@ describe Mcpc::JsonRpc::Router do
     slow.await["name"].should eq("slow")
   end
 
-  it "raises RpcError for an error response" do
+  it "raises RPCError for an error response" do
     server = FakeServer.new
     server.fail_with("fail", -32602, "Unknown tool", {"tool" => "x"})
     router, _ = router_with(server)
 
-    error = expect_raises(Mcpc::RpcError, "Unknown tool") { router.open("fail").await }
+    error = expect_raises(MCPC::RPCError, "Unknown tool") { router.open("fail").await }
     error.code.should eq(-32602)
     error.data.should eq(JSON.parse(%({"tool":"x"})))
   end
@@ -62,7 +62,7 @@ describe Mcpc::JsonRpc::Router do
     release = Channel(Nil).new
     server.on("work") { release.receive; {"done" => true} }
     router, _ = router_with(server)
-    asked = [] of Mcpc::JsonRpc::Id
+    asked = [] of MCPC::JSONRPC::Id
     router.on_request { |request| asked << request.id }
 
     call = router.open("work")
@@ -107,17 +107,17 @@ describe Mcpc::JsonRpc::Router do
     server.on("hang") { FakeServer::SILENT }
     router, _ = router_with(server)
 
-    expect_raises(Mcpc::TimeoutError) { router.open("hang").await(20.milliseconds) }
+    expect_raises(MCPC::TimeoutError) { router.open("hang").await(20.milliseconds) }
   end
 
   it "stops waiting once cancelled, giving the reason" do
     server = FakeServer.new
     server.on("hang") { FakeServer::SILENT }
     router, _ = router_with(server)
-    cancellation = Mcpc::Cancellation.new
+    cancellation = MCPC::Cancellation.new
 
     spawn { cancellation.cancel("user pressed stop") }
-    expect_raises(Mcpc::CancelledError, "user pressed stop") do
+    expect_raises(MCPC::CancelledError, "user pressed stop") do
       router.open("hang").await(cancellation: cancellation)
     end
   end
@@ -132,7 +132,7 @@ describe Mcpc::JsonRpc::Router do
     call = router.open("hang")
     transport.drop("pipe broke")
 
-    expect_raises(Mcpc::ConnectionClosedError, "pipe broke") { call.await }
+    expect_raises(MCPC::ConnectionClosedError, "pipe broke") { call.await }
     closed_with.should eq(["pipe broke"])
   end
 
@@ -140,7 +140,7 @@ describe Mcpc::JsonRpc::Router do
     router, transport = router_with(FakeServer.new)
     transport.close
 
-    expect_raises(Mcpc::ConnectionClosedError) { router.open("echo") }
+    expect_raises(MCPC::ConnectionClosedError) { router.open("echo") }
   end
 
   it "lets the caller prepare before the request is sent" do

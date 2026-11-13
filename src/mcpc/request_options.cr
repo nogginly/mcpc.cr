@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Per-request choices. Every field is optional.
   #
   # * `timeout` overrides `Config#request_timeout`.

@@ -2,11 +2,11 @@ require "../spec_helper"
 
 private def messages_in(stream : String) : Array(String)
   messages = [] of String
-  Mcpc::Transport::SseReader.new(IO::Memory.new(stream)).each_message { |data| messages << data }
+  MCPC::Transport::SSEReader.new(IO::Memory.new(stream)).each_message { |data| messages << data }
   messages
 end
 
-describe Mcpc::Transport::SseReader do
+describe MCPC::Transport::SSEReader do
   it "yields the data of each event" do
     messages_in("event: message\ndata: one\n\nevent: message\ndata: two\n\n").should eq(["one", "two"])
   end

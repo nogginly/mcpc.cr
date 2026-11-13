@@ -1,18 +1,18 @@
 require "./spec_helper"
 
-private def text_of(report : McpcProbe::Report) : String
-  String.build { |io| McpcProbe::TextRenderer.new(io).render(report) }
+private def text_of(report : MCPCProbe::Report) : String
+  String.build { |io| MCPCProbe::TextRenderer.new(io).render(report) }
 end
 
-private def json_of(report : McpcProbe::Report) : JSON::Any
-  JSON.parse(String.build { |io| McpcProbe::JsonRenderer.new(io).render(report) })
+private def json_of(report : MCPCProbe::Report) : JSON::Any
+  JSON.parse(String.build { |io| MCPCProbe::JSONRenderer.new(io).render(report) })
 end
 
-private def failed_report : McpcProbe::Report
-  McpcProbe::Report.new("https://example.com/mcp").tap(&.failure=("The server did not answer in time."))
+private def failed_report : MCPCProbe::Report
+  MCPCProbe::Report.new("https://example.com/mcp").tap(&.failure=("The server did not answer in time."))
 end
 
-describe McpcProbe::TextRenderer do
+describe MCPCProbe::TextRenderer do
   it "shows the server, its era, its capabilities and each list" do
     text = text_of(survey(well_stocked_server)[0])
 
@@ -67,7 +67,7 @@ describe McpcProbe::TextRenderer do
   end
 end
 
-describe McpcProbe::JsonRenderer do
+describe MCPCProbe::JSONRenderer do
   it "writes the whole report as JSON" do
     json = json_of(survey(well_stocked_server)[0])
 

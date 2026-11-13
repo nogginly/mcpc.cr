@@ -1,6 +1,6 @@
 require "base64"
 
-module Mcpc
+module MCPC
   module Era
     # Encodes text for an `Mcp-Name` or `Mcp-Param-*` header.
     module HeaderValue

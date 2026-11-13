@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   struct PromptArgument
     include JSON::Serializable
 

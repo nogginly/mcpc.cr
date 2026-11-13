@@ -1,4 +1,4 @@
-module McpcProbe
+module MCPCProbe
   # Writes a report for a person to read.
   class TextRenderer
     NAME_WIDTH =  28
@@ -17,7 +17,7 @@ module McpcProbe
       instructions(server)
     end
 
-    private def describe(server : Mcpc::ServerInfo)
+    private def describe(server : MCPC::ServerInfo)
       server.implementation.try { |program| field("Server", CleanText.line("#{program.name} #{program.version}")) }
       era = server.stateless? ? "stateless" : "handshake"
       field("Protocol", "#{server.protocol_version} (#{era} era)")
@@ -33,7 +33,7 @@ module McpcProbe
       section.items.each { |item| row(item.name, item.description || "") }
     end
 
-    private def instructions(server : Mcpc::ServerInfo)
+    private def instructions(server : MCPC::ServerInfo)
       text = server.instructions || return
       heading("Instructions (written by the server)")
       CleanText.block(text).each { |line| @io.puts "  #{line}".rstrip }

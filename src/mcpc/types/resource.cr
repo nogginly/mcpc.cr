@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Data the server offers for reading.
   struct Resource
     include JSON::Serializable

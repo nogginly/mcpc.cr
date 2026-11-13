@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # A program's name and version, as it reports them.
   struct Implementation
     include JSON::Serializable

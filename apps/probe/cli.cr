@@ -1,6 +1,6 @@
-module McpcProbe
+module MCPCProbe
   # Runs the command: reads the options, probes the server, prints the report.
-  class Cli
+  class CLI
     EXIT_OK      = 0
     EXIT_PROBLEM = 1
     EXIT_USAGE   = 2
@@ -13,7 +13,7 @@ module McpcProbe
     def run : Int32
       options = Options.new(@arguments, @environment)
       return show(options.usage) if options.help?
-      return show("#{NAME} #{Mcpc::VERSION}") if options.version?
+      return show("#{NAME} #{MCPC::VERSION}") if options.version?
       target = options.target || raise UsageError.new("Name a server.")
       report = Survey.new(target.client(config(options)), target.label).run
       renderer(options).render(report)
@@ -29,15 +29,15 @@ module McpcProbe
       EXIT_OK
     end
 
-    private def config(options : Options) : Mcpc::Config
-      Mcpc::Config.new.tap do |config|
+    private def config(options : Options) : MCPC::Config
+      MCPC::Config.new.tap do |config|
         config.client_name = NAME
         config.request_timeout = options.timeout
       end
     end
 
-    private def renderer(options : Options) : TextRenderer | JsonRenderer
-      options.json? ? JsonRenderer.new(@output) : TextRenderer.new(@output)
+    private def renderer(options : Options) : TextRenderer | JSONRenderer
+      options.json? ? JSONRenderer.new(@output) : TextRenderer.new(@output)
     end
   end
 end

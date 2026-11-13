@@ -1,6 +1,6 @@
-module Mcpc
+module MCPC
   # The JSON-RPC 2.0 envelope every MCP message travels in.
-  module JsonRpc
+  module JSONRPC
     VERSION = "2.0"
 
     # Request ids are strings or integers, echoed back with the same type.
@@ -66,7 +66,7 @@ module Mcpc
     alias Message = Request | Notification | Response
 
     # Text that is not one JSON-RPC message.
-    class InvalidMessage < Mcpc::ProtocolError
+    class InvalidMessage < MCPC::ProtocolError
     end
 
     # Reads one message, choosing its type by shape: a `method` with an `id`
