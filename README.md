@@ -15,7 +15,8 @@ dependencies:
     github: nogginly/mcpc.cr
 ```
 
-It needs Crystal 1.22 or later and nothing beyond the standard library.
+It needs Crystal 1.20 or later and nothing beyond the standard library. It is tested on Linux,
+macOS and Windows.
 
 ## Quick start
 

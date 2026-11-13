@@ -2,10 +2,20 @@ require "../spec_helper"
 
 # Runs against the reference server, which needs Node and the network.
 # Opt in with: MCPC_INTEGRATION=1 crystal spec --tag integration
+# On Windows `npx` is a batch file, which only the command interpreter can run.
+private def reference_server_command : {String, Array(String)}
+  npx = ["npx", "-y", "@modelcontextprotocol/server-everything"]
+  {% if flag?(:windows) %}
+    {"cmd.exe", ["/c"] + npx}
+  {% else %}
+    {npx.first, npx[1..]}
+  {% end %}
+end
+
 private def everything_client(& : Mcpc::Client, EventLog ->)
   pending!("set MCPC_INTEGRATION=1 to run against the reference server") unless ENV["MCPC_INTEGRATION"]?
-  transport = Mcpc::Transport::Stdio.new("npx", ["-y", "@modelcontextprotocol/server-everything"],
-    stderr: Process::Redirect::Close)
+  command, args = reference_server_command
+  transport = Mcpc::Transport::Stdio.new(command, args, stderr: Process::Redirect::Close)
   client = Mcpc::Client.new(transport)
   client.on_elicitation(&.accept({"name" => "Ada", "check" => true}))
   log = EventLog.new(client)

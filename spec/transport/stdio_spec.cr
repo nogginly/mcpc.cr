@@ -3,7 +3,7 @@ require "../spec_helper"
 private NO_HEADERS = Mcpc::Transport::Headers.new
 
 private def shell_transport(script : String, grace = 2.seconds) : Mcpc::Transport::Stdio
-  Mcpc::Transport::Stdio.new("/bin/sh", ["-c", script], stderr: Process::Redirect::Close, shutdown_grace: grace)
+  Mcpc::Transport::Stdio.new("sh", ["-c", script], stderr: Process::Redirect::Close, shutdown_grace: grace)
 end
 
 private def collect_messages(transport : Mcpc::Transport) : Array(Mcpc::JsonRpc::Message)

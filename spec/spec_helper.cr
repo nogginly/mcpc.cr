@@ -10,8 +10,10 @@ def fixture(type : String, name : String) : String
   File.read(FIXTURES / type / "#{name}.json")
 end
 
-def fixture_paths : Array(String)
-  Dir.glob((FIXTURES / "**" / "*.json").to_s).sort!
+# The example files of one type, or of every type. The pattern uses forward
+# slashes because a backslash is an escape character in a glob.
+def fixture_paths(type : String = "**") : Array(String)
+  Dir.glob((FIXTURES / type / "*.json").to_posix.to_s).sort!
 end
 
 # Lets fibers started by the code under test run until *condition* holds.
