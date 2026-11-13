@@ -37,12 +37,14 @@ jobs:
       - uses: crystal-lang/install-crystal@v1
       - name: Install dependencies
         run: shards install
+      - name: Build the apps
+        run: shards build
       - name: Check formatting
-        run: crystal tool format --check src spec samples
+        run: crystal tool format --check src spec samples apps
       - name: Build the linter
         run: mkdir -p bin && cp lib/ameba/bin/ameba.cr bin && crystal build -o bin/ameba bin/ameba.cr
       - name: Lint
-        run: bin/ameba src spec samples
+        run: bin/ameba src spec samples apps
 
   integration:
     name: Reference server (${{ matrix.os }})

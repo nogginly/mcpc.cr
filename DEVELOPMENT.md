@@ -18,6 +18,7 @@ Command               |Description
 `ops up`              |Gets everything setup, especially dependencies and `ameba` for linting.
 `ops specs`           |Run `crystal spec` on the test specs in `spec/`                        
 `ops lint`            |Run `ameba` on the source code                                         
+`ops build`           |Build the command-line apps into `bin/`                                
 `ops integration`     |Run the specs that need the reference server (Node and network)        
 `ops test`            |Convenient actions to run tests specs and lint the code                
 `ops wipe`            |Clear Crystal build caches                                             
@@ -36,7 +37,8 @@ shards check || (shards install && mkdir -p bin && cp lib/ameba/bin/ameba.cr bin
 Command                      |Description                   
 -----------------------------|------------------------------
 `crystal --order random spec`|Run test specs in random order
-`bin/ameba src spec samples` |Lint all source code          
+`bin/ameba src spec samples apps`|Lint all source code       
+`shards build`               |Build the command-line apps into `bin/`
 `crystal tool format`        |Format all source code        
 `crystal clear_cache`        |Clear Crystal build caches    
 `crystal run CRYSTAL_FILE`   |Build and run a Crystal app   
@@ -52,6 +54,8 @@ Path                |Holds
 `spec/fixtures/`    |Example messages copied from the MCP specification
 `spec/integration/` |Specs against the real reference server
 `samples/`          |Runnable examples
+`apps/`             |Command-line apps that ship with the shard, one folder each
+`spec/apps/`        |Their specs
 `references/`       |Notes on the protocol and the build brief
 
 ## Testing
@@ -116,8 +120,20 @@ directory again to refresh it. Do not edit the files.
 ```sh
 crystal spec --order random
 crystal tool format --check
-bin/ameba src spec samples
+bin/ameba src spec samples apps
 ```
+
+### Apps
+
+An app under `apps/` is a customer of the shard, not part of it.
+
+1. It requires `src/mcpc` and uses only what an outside application could: the public API.
+   If an app needs something the API lacks, improve the API.
+2. Nothing in `src/` may require anything in `apps/`.
+3. Each app has a `main.cr` that only starts it, and a `targets:` entry in `shard.yml`.
+   Everything else lives in small classes that specs can load without running the app.
+4. Text written by a server is untrusted. Before printing it to a terminal, pass it through
+   something like `McpcProbe::CleanText`, which removes control characters.
 
 ### Continuous integration
 
@@ -126,7 +142,7 @@ bin/ameba src spec samples
 Job               |Runs                                                  |On
 ------------------|------------------------------------------------------|------------------------------------------
 Specs             |`crystal spec --order random`                         |Linux, macOS, Windows × Crystal 1.20, 1.21, latest
-Format and lint   |The format check, then `ameba`                        |Linux, latest Crystal
+Format and lint   |`shards build`, the format check, then `ameba`        |Linux, latest Crystal
 Reference server  |The integration specs, against `server-everything`    |Linux, macOS, Windows, latest Crystal
 
 1. The oldest Crystal in the matrix is the one `shard.yml` promises. Change them together.
