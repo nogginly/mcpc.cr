@@ -5,7 +5,7 @@ dependencies:
     - shards check || (shards install && mkdir -p bin && cp lib/ameba/bin/ameba.cr bin && crystal build -o bin/ameba bin/ameba.cr)
 hooks:
   before:
-    - mkdir -p bin samples spec src
+    - mkdir -p apps bin samples spec src
 actions:
   run:
     command: crystal run
@@ -14,11 +14,14 @@ actions:
     command: crystal clear_cache
     description: Clear build caches
   lint:
-    command: bin/ameba src/ spec/ samples/
+    command: bin/ameba src/ spec/ samples/ apps/
     description: Run Crystal source linter (ameba)
   specs:
     command: crystal spec --order random
     description: Run all test specs
+  build:
+    command: shards build
+    description: Build the command-line apps into bin/
   integration:
     command: MCPC_INTEGRATION=1 crystal spec --tag integration
     description: Run the specs that need the reference server (Node and network)

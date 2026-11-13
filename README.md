@@ -206,6 +206,76 @@ transport = Mcpc::Transport::Stdio.new("my-server", stderr: File.open("server.lo
 client = Mcpc::Client.new(transport)
 ```
 
+## Checking a server: `mcpc-probe`
+
+The shard comes with a command-line tool that connects to a server and reports what it
+advertises. Use it to find out whether a server works with this client before writing any code.
+
+```sh
+shards build
+bin/mcpc-probe https://example.com/mcp
+bin/mcpc-probe -- npx -y @modelcontextprotocol/server-everything
+```
+
+```text
+Target    npx -y @modelcontextprotocol/server-everything
+Result    connected
+Server    mcp-servers/everything 1.0.0
+Protocol  2025-11-25 (handshake era)
+
+Capabilities
+  tools                        {"listChanged":true}
+  prompts                      {"listChanged":true}
+  ...
+
+Tools (13)
+  echo                         Echoes back the input string
+  get-sum                      Returns the sum of two numbers
+  ...
+```
+
+It also lists resources, resource templates and prompts, and prints the server's instructions.
+
+| Option | Does |
+|---|---|
+| `-H`, `--header "Name: value"` | Sends an HTTP header |
+| `--header-env NAME=VAR` | Sends header `NAME` with the value of environment variable `VAR` |
+| `--bearer-env VAR` | Sends `Authorization: Bearer` with the token in `VAR` |
+| `--timeout SECONDS` | Gives up on a request after this long; default 30 |
+| `--json` | Reports as JSON, for scripts |
+
+Prefer the `-env` options for secrets: a value typed on the command line is visible to other
+processes and lands in your shell history.
+
+```sh
+MY_TOKEN=... bin/mcpc-probe --bearer-env MY_TOKEN https://example.com/mcp
+```
+
+| Exit status | Meaning |
+|---|---|
+| 0 | Connected, and everything the server advertises could be read |
+| 1 | Could not connect, or an advertised list could not be read |
+| 2 | The command line was wrong |
+
+1. Put a server command after `--`, so that its flags are not taken for the probe's own.
+2. A server that requires the OAuth flow will be reported as refusing the credentials. The shard
+   has no OAuth yet; a static token or API key works.
+3. From a project that depends on the shard, build the probe with
+   `crystal build lib/mcpc/apps/probe/main.cr -o bin/mcpc-probe`.
+
+## Windows
+
+A server started through a batch file, such as `npx`, must be launched through the command
+interpreter, because Windows cannot run a batch file directly.
+
+```crystal
+client = Mcpc::Client.stdio("cmd.exe", ["/c", "npx", "-y", "@modelcontextprotocol/server-everything"])
+```
+
+```sh
+bin\mcpc-probe -- cmd.exe /c npx -y @modelcontextprotocol/server-everything
+```
+
 ## Trust
 
 Tool descriptions, prompts, annotations, `ServerInfo#instructions` and elicitation messages are

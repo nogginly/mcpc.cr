@@ -211,9 +211,50 @@ HTTP error status, because modern servers send both. The exceptions are 401 and 
 error)` when a request can never be answered, and `closed` once at the end. Add a constructor to
 `Client` if it deserves one.
 
+**Add an app.** Make a folder under `apps/` with a `main.cr`, add a `targets:` entry to
+`shard.yml`, and put specs under `spec/apps/`. Use only the public API.
+
 **Add a protocol revision.** If it follows an existing era, add it to `Protocol`. If it changes the
 conversation, write a new `Era::Strategy` and teach `Era::Detector` to choose it. The layers below
 should not need to change.
+
+## Apps
+
+`apps/` holds command-line tools that ship with the shard. They sit above the stack as ordinary
+applications: they use the public API and nothing else, which makes each one a standing test that
+the API is enough.
+
+They are built by `shards build` and are not handed to projects that depend on the shard. Doing
+that needs a `postinstall` compile on every install of every dependent, wanted or not.
+
+### mcpc-probe
+
+Connects to one server and reports what it advertises.
+
+```mermaid
+flowchart LR
+    A[Options] --> T[Target]
+    T --> C[Mcpc::Client]
+    C --> S[Survey]
+    S --> R[Report]
+    R --> X{{--json?}}
+    X -- no --> TR[TextRenderer]
+    X -- yes --> JR[JsonRenderer]
+```
+
+| Class | Job |
+|---|---|
+| `Options` | Reads the command line; resolves header values from the environment |
+| `HttpTarget`, `StdioTarget` | Know how to build the client for one kind of server |
+| `Survey` | Connects, then reads each list the server advertises, recording failures instead of raising |
+| `Report`, `Section`, `Item` | Plain data: what was found |
+| `Diagnosis` | Turns an error into advice a person can act on |
+| `TextRenderer`, `JsonRenderer` | Write the report |
+| `CleanText` | Strips control characters from server-written text before it reaches a terminal |
+| `Cli` | Wires the above and chooses the exit status |
+
+`Survey` asks only for lists whose capability the server advertises, so a failure always means
+the server offered something this client could not read.
 
 ## Authority
 
