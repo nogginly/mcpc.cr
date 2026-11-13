@@ -62,12 +62,12 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
       end
     end
 
-    it "raises RpcError for a protocol failure" do
+    it "raises RPCError for a protocol failure" do
       server = new_server.call
       server.fail_with("tools/call", -32602, "Unknown tool: nope")
       connected_client(server) do |client|
         client.connect
-        expect_raises(MCPC::RpcError, "Unknown tool: nope") { client.call_tool("nope") }.code.should eq(-32602)
+        expect_raises(MCPC::RPCError, "Unknown tool: nope") { client.call_tool("nope") }.code.should eq(-32602)
       end
     end
 

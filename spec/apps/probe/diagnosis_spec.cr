@@ -2,18 +2,18 @@ require "./spec_helper"
 
 describe MCPCProbe::Diagnosis do
   it "explains refused credentials and how to pass a token" do
-    message = MCPCProbe::Diagnosis.of(MCPC::HttpError.new(401))
+    message = MCPCProbe::Diagnosis.of(MCPC::HTTPError.new(401))
     message.should contain("refused the credentials (HTTP 401)")
     message.should contain("no OAuth")
     message.should contain("--bearer-env")
   end
 
   it "points at the path for HTTP 404" do
-    MCPCProbe::Diagnosis.of(MCPC::HttpError.new(404)).should contain("Check the path")
+    MCPCProbe::Diagnosis.of(MCPC::HTTPError.new(404)).should contain("Check the path")
   end
 
   it "reports other HTTP statuses plainly" do
-    MCPCProbe::Diagnosis.of(MCPC::HttpError.new(503)).should eq("The server answered HTTP 503.")
+    MCPCProbe::Diagnosis.of(MCPC::HTTPError.new(503)).should eq("The server answered HTTP 503.")
   end
 
   it "explains a timeout, a version mismatch and an unreachable server" do

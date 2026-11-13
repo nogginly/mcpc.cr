@@ -12,7 +12,7 @@ module MCPC
         @meta = RequestMeta.new(server.protocol_version, context.config, context.input.capabilities)
         @headers = RoutingHeaders.new(server.protocol_version)
         @rounds = MultiRoundTrip.new(context.input, context.config.max_input_rounds)
-        @streams = {} of JsonRpc::Id => ListenStream
+        @streams = {} of JSONRPC::Id => ListenStream
       end
 
       def request(method : String, params : Params, options : RequestOptions) : JSON::Any
@@ -38,7 +38,7 @@ module MCPC
         tools.select { |tool| @headers.learn(tool) }
       end
 
-      protected def handle_notification(notification : JsonRpc::Notification) : Nil
+      protected def handle_notification(notification : JSONRPC::Notification) : Nil
         case notification.method
         when ACKNOWLEDGED then acknowledge(notification)
         when CANCELLED    then end_by_server(notification)
@@ -46,13 +46,13 @@ module MCPC
         end
       end
 
-      protected def cancel_on_server(id : JsonRpc::Id, reason : String?) : Nil
+      protected def cancel_on_server(id : JSONRPC::Id, reason : String?) : Nil
         return if @context.transport.abort(id)
         @context.router.notify(CANCELLED, cancelled_params(id, reason))
       end
 
       private def open_stream(filter : SubscriptionFilter) : ListenStream
-        params = Params{"notifications" => Json.any(filter)}
+        params = Params{"notifications" => JSONValue.any(filter)}
         call = @context.router.open(LISTEN, @meta.apply(params), @headers.for(LISTEN, params)) do |opened|
           @streams[opened.id] = ListenStream.new(opened)
         end
@@ -84,7 +84,7 @@ module MCPC
         @context.router.fail(stream.call.id, CancelledError.new)
       end
 
-      private def acknowledge(notification : JsonRpc::Notification)
+      private def acknowledge(notification : JSONRPC::Notification)
         params = notification.params || return
         id = subscription_id(params) || return
         filter = SubscriptionFilter.from_json(params["notifications"].to_json)
@@ -93,18 +93,18 @@ module MCPC
         Log.warn { "ignored malformed #{ACKNOWLEDGED}: #{error.message}" }
       end
 
-      private def end_by_server(notification : JsonRpc::Notification)
+      private def end_by_server(notification : JSONRPC::Notification)
         params = notification.params || return
         id = request_id(params["requestId"]?) || return
         reason = params["reason"]?.try(&.as_s?) || "cancelled by the server"
         @context.router.fail(id, Error.new(reason))
       end
 
-      private def subscription_id(params : JSON::Any) : JsonRpc::Id?
+      private def subscription_id(params : JSON::Any) : JSONRPC::Id?
         request_id(params.dig?("_meta", "io.modelcontextprotocol/subscriptionId"))
       end
 
-      private def request_id(value : JSON::Any?) : JsonRpc::Id?
+      private def request_id(value : JSON::Any?) : JSONRPC::Id?
         value.try { |id| id.as_i64? || id.as_s? }
       end
     end

@@ -1,6 +1,6 @@
 module MCPCProbe
   # Writes a report for a program to read.
-  class JsonRenderer
+  class JSONRenderer
     def initialize(@io : IO)
     end
 

@@ -1,5 +1,5 @@
 module MCPC
-  module JsonRpc
+  module JSONRPC
     # The requests still waiting for a response, keyed by id.
     class PendingCalls
       alias Outcome = JSON::Any | Exception

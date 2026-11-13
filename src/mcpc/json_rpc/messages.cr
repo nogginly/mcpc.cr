@@ -1,6 +1,6 @@
 module MCPC
   # The JSON-RPC 2.0 envelope every MCP message travels in.
-  module JsonRpc
+  module JSONRPC
     VERSION = "2.0"
 
     # Request ids are strings or integers, echoed back with the same type.

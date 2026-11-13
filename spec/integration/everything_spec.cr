@@ -42,9 +42,9 @@ describe "the reference server, @modelcontextprotocol/server-everything", tags: 
     end
   end
 
-  it "raises RpcError for a method the server does not have" do
+  it "raises RPCError for a method the server does not have" do
     everything_client do |client|
-      expect_raises(MCPC::RpcError) { client.request("no/such/method") }.code.should eq(-32601)
+      expect_raises(MCPC::RPCError) { client.request("no/such/method") }.code.should eq(-32601)
     end
   end
 

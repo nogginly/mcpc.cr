@@ -1,10 +1,10 @@
 require "../spec_helper"
 
-private def sent_notifications(transport : FakeTransport, method : String) : Array(MCPC::JsonRpc::Notification)
-  transport.sent.map(&.[0]).select(MCPC::JsonRpc::Notification).select { |notification| notification.method == method }
+private def sent_notifications(transport : FakeTransport, method : String) : Array(MCPC::JSONRPC::Notification)
+  transport.sent.map(&.[0]).select(MCPC::JSONRPC::Notification).select { |notification| notification.method == method }
 end
 
-private def meta_of(request : MCPC::JsonRpc::Request) : JSON::Any
+private def meta_of(request : MCPC::JSONRPC::Request) : JSON::Any
   params_of(request)["_meta"]
 end
 
@@ -48,7 +48,7 @@ describe MCPC::Era::Stateless do
       client.connect
       client.list_tools
       server.requests.map(&.method).should eq(["server/discover", "tools/list"])
-      transport.sent.map(&.[0]).select(MCPC::JsonRpc::Notification).should be_empty
+      transport.sent.map(&.[0]).select(MCPC::JSONRPC::Notification).should be_empty
     end
   end
 
@@ -303,7 +303,7 @@ describe MCPC::Era::Stateless do
       connected_client(server) do |client|
         log = EventLog.new(client)
         client.connect
-        expect_raises(MCPC::RpcError, "Method not found") { client.subscribe(MCPC::SubscriptionFilter.new(tools: true)) }
+        expect_raises(MCPC::RPCError, "Method not found") { client.subscribe(MCPC::SubscriptionFilter.new(tools: true)) }
         sleep 10.milliseconds
         log.of(MCPC::Event::SubscriptionClosed).should be_empty
       end

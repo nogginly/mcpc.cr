@@ -12,7 +12,7 @@ module MCPC
 
     # The user answered; *content* holds the fields the schema asked for.
     def accept(content) : ElicitationResponse
-      ElicitationResponse.new("accept", Json.any(content))
+      ElicitationResponse.new("accept", JSONValue.any(content))
     end
 
     # The user said no.

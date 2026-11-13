@@ -3,7 +3,7 @@ require "../spec_helper"
 private def detect(server : FakeServer, config = fast_config) : {MCPC::Era::Strategy, FakeTransport}
   transport = FakeTransport.new(server)
   transport.uses_headers = true
-  context = MCPC::Era::Context.new(MCPC::JsonRpc::Router.new(transport), transport, config,
+  context = MCPC::Era::Context.new(MCPC::JSONRPC::Router.new(transport), transport, config,
     MCPC::EventDispatcher.new, MCPC::ClientInput.new)
   {MCPC::Era::Detector.new(context).detect, transport}
 end
@@ -60,7 +60,7 @@ describe MCPC::Era::Detector do
     strategy, transport = detect(server)
 
     strategy.should be_a(MCPC::Era::Handshake)
-    transport.sent.map(&.[0]).select(MCPC::JsonRpc::Notification).map(&.method).should eq(["notifications/initialized"])
+    transport.sent.map(&.[0]).select(MCPC::JSONRPC::Notification).map(&.method).should eq(["notifications/initialized"])
   end
 
   it "falls back to the handshake when a dual-era server offers only older revisions" do
@@ -93,7 +93,7 @@ describe MCPC::Era::Detector do
       server = FakeServer.legacy
       server.fail_with("server/discover", code, fault)
 
-      expect_raises(MCPC::RpcError, fault) { detect(server) }
+      expect_raises(MCPC::RPCError, fault) { detect(server) }
       server.requests.map(&.method).should_not contain("initialize")
     end
   end

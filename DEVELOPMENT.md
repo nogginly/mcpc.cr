@@ -66,7 +66,7 @@ Path                |Holds
 flowchart TD
     U["Unit specs<br/>json_rpc, transport, era"] --> F[FakeServer in memory]
     C["Client specs<br/>client_spec, era/handshake, era/stateless"] --> F
-    H["HTTP specs<br/>streamable_http_spec, client_http_spec"] --> HF["HttpFakeServer<br/>a real HTTP::Server on a local port"]
+    H["HTTP specs<br/>streamable_http_spec, client_http_spec"] --> HF["HTTPFakeServer<br/>a real HTTP::Server on a local port"]
     HF --> F
     S[stdio_spec] --> SH["/bin/sh scripts as servers"]
     I["Integration specs<br/>opt-in"] --> R["server-everything via npx"]
@@ -76,7 +76,7 @@ flowchart TD
 1. `FakeServer` is a scripted MCP server. Register a block per method and its value becomes the
    result. `FakeServer.legacy` and `FakeServer.modern` start you off with a server of each era.
 2. `FakeTransport` connects a client to a `FakeServer` in memory and records what was sent.
-3. `HttpFakeServer` serves the same `FakeServer` over real HTTP, as JSON or as an event stream.
+3. `HTTPFakeServer` serves the same `FakeServer` over real HTTP, as JSON or as an event stream.
 4. `client_spec.cr` runs its shared examples once per era. Behaviour that must not differ between
    eras belongs there.
 
@@ -114,8 +114,10 @@ directory again to refresh it. Do not edit the files.
    Inside a method, comment only to list the steps. History goes in commit messages.
 5. **Keep the eras apart.** Anything that differs between protocol eras belongs in `src/mcpc/era/`.
    `Client`, the router and the transports must not ask which era they are in.
-6. **Never pretty-print** JSON that goes to a server. On stdio a newline ends the message.
-7. **Before you commit**, run the following, and expect no output from the middle two.
+6. **Spell acronyms in capitals**, as the standard library does: `MCPC`, `HTTPError`, `JSONRPC`,
+   `SSEReader`. File names stay in snake case: `json_rpc/`, `sse_reader.cr`.
+7. **Never pretty-print** JSON that goes to a server. On stdio a newline ends the message.
+8. **Before you commit**, run the following, and expect no output from the middle two.
 
 ```sh
 crystal spec --order random

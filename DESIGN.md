@@ -21,7 +21,7 @@ flowchart TD
     API["Client<br/>list_tools, call_tool, on_event"]
     ERA["Era strategy<br/>Handshake or Stateless"]
     RPC["JSON-RPC router<br/>ids, waiting callers, inbound dispatch"]
-    T["Transport<br/>Stdio or StreamableHttp"]
+    T["Transport<br/>Stdio or StreamableHTTP"]
     S[Server]
     APP --> API --> ERA --> RPC --> T --> S
     style ERA stroke:#2a9d4f,stroke-width:3px
@@ -52,7 +52,7 @@ flowchart TD
     B -- "any other JSON-RPC error" --> L
     B -- "no answer within probe_timeout" --> L
     B -- "HTTP 400, 404 or 405 without a JSON-RPC error" --> L
-    B -- "HTTP 401, 403, 5xx" --> Y[Raise HttpError]
+    B -- "HTTP 401, 403, 5xx" --> Y[Raise HTTPError]
     style M stroke:#2a9d4f,stroke-width:3px
     style X stroke:#c0392b,stroke-width:3px
     style U stroke:#c0392b,stroke-width:3px
@@ -95,7 +95,7 @@ by request id.
 |---|---|---|
 | Caller | The application | Sends a request and blocks in `Call#await` |
 | Reader | `Transport::Stdio#open` | Reads lines and hands each message to the router |
-| Request | `Transport::StreamableHttp#send` | One per HTTP request; reads that request's reply |
+| Request | `Transport::StreamableHTTP#send` | One per HTTP request; reads that request's reply |
 | Events | `EventDispatcher` | Calls the application's handler, in order |
 | Server request | `Era::ServerRequests` | One per question from a handshake-era server |
 | Subscription | `Era::Stateless#subscribe` | Waits for a listen stream to end |
@@ -155,18 +155,18 @@ A tool called without having been listed gets no `Mcp-Param-*` headers.
 `Transport` is a small abstract class: `open`, `send`, `close`, and three callbacks. Three
 optional methods let an era use what a transport can do without knowing what kind it is.
 
-| Method | Stdio | StreamableHttp |
+| Method | Stdio | StreamableHTTP |
 |---|---|---|
 | `uses_headers?` | false | true |
 | `abort(id)` | false: cannot | true: closes that request's stream |
 | `listen(headers)` | does nothing | opens the handshake era's GET stream |
 
-`StreamableHttp` keeps the `Mcp-Session-Id` itself. It is a property of the HTTP conversation, and
+`StreamableHTTP` keeps the `Mcp-Session-Id` itself. It is a property of the HTTP conversation, and
 keeping it there spares the era layer from reading response headers.
 
-`HttpReply` classifies a refusal. A JSON-RPC error in the body becomes `RpcError` even with an
+`HTTPReply` classifies a refusal. A JSON-RPC error in the body becomes `RPCError` even with an
 HTTP error status, because modern servers send both. The exceptions are 401 and 403, which stay
-`HttpError` so that an authorization failure is never mistaken for an old server.
+`HTTPError` so that an authorization failure is never mistaken for an old server.
 
 ## Decisions and their costs
 
@@ -195,7 +195,7 @@ HTTP error status, because modern servers send both. The exceptions are 401 and 
 | SSE resumption with `Last-Event-ID` | Handshake era only; dropped from the protocol in 2026-07-28. |
 | Re-initializing an expired HTTP session | `SessionExpiredError` is raised; make a new client. |
 | Restarting a stdio server that exits | `Event::Disconnected` is emitted; make a new client. |
-| Retrying after `-32020` by re-listing tools | The error is raised as `RpcError`. |
+| Retrying after `-32020` by re-listing tools | The error is raised as `RPCError`. |
 | Retrying a request after `-32022` mid-connection | The revision is settled at `connect`. |
 | The official conformance suite | Build step 8 of the brief. |
 
@@ -239,19 +239,19 @@ flowchart LR
     S --> R[Report]
     R --> X{{--json?}}
     X -- no --> TR[TextRenderer]
-    X -- yes --> JR[JsonRenderer]
+    X -- yes --> JR[JSONRenderer]
 ```
 
 | Class | Job |
 |---|---|
 | `Options` | Reads the command line; resolves header values from the environment |
-| `HttpTarget`, `StdioTarget` | Know how to build the client for one kind of server |
+| `HTTPTarget`, `StdioTarget` | Know how to build the client for one kind of server |
 | `Survey` | Connects, then reads each list the server advertises, recording failures instead of raising |
 | `Report`, `Section`, `Item` | Plain data: what was found |
 | `Diagnosis` | Turns an error into advice a person can act on |
-| `TextRenderer`, `JsonRenderer` | Write the report |
+| `TextRenderer`, `JSONRenderer` | Write the report |
 | `CleanText` | Strips control characters from server-written text before it reaches a terminal |
-| `Cli` | Wires the above and chooses the exit status |
+| `CLI` | Wires the above and chooses the exit status |
 
 `Survey` asks only for lists whose capability the server advertises, so a failure always means
 the server offered something this client could not read.

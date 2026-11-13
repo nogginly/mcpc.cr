@@ -1,5 +1,5 @@
 module MCPC
-  module JsonRpc
+  module JSONRPC
     # Assigns request ids, matches responses to waiting callers, and hands
     # inbound requests and notifications to whoever registered for them.
     class Router
@@ -89,7 +89,7 @@ module MCPC
 
       private def outcome_of(response : Response) : PendingCalls::Outcome
         if error = response.error
-          RpcError.new(error.code, error.message, error.data)
+          RPCError.new(error.code, error.message, error.data)
         else
           response.result || ProtocolError.new("response carries neither result nor error")
         end

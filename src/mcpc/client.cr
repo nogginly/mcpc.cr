@@ -11,7 +11,7 @@ module MCPC
   # ```
   #
   # Methods that talk to the server block the calling fiber and raise
-  # `RpcError` when the server refuses, `TimeoutError` when it is too slow,
+  # `RPCError` when the server refuses, `TimeoutError` when it is too slow,
   # and `TransportError` when it cannot be reached.
   class Client
     DEFAULT_OPTIONS = RequestOptions.new
@@ -24,7 +24,7 @@ module MCPC
     # A client for a server at a Streamable HTTP endpoint. *headers* go
     # with every request; use them for credentials.
     def self.http(url : String, headers = Transport::Headers.new, config = Config.new) : Client
-      new(Transport::StreamableHttp.new(url, headers), config)
+      new(Transport::StreamableHTTP.new(url, headers), config)
     end
 
     def initialize(@transport : Transport, @config = Config.new)
@@ -52,7 +52,7 @@ module MCPC
     # attempt leaves the connection closed.
     def connect : ServerInfo
       @transport.open
-      router = JsonRpc::Router.new(@transport)
+      router = JSONRPC::Router.new(@transport)
       router.on_close { |error| report_disconnect(error) }
       @era = Era::Detector.new(Era::Context.new(router, @transport, @config, @events, @input)).detect
       server
@@ -83,7 +83,7 @@ module MCPC
     # true; only protocol problems raise.
     def call_tool(name : String, arguments = nil, options = DEFAULT_OPTIONS) : CallToolResult
       params = Params{"name" => JSON::Any.new(name)}
-      params["arguments"] = Json.any(arguments) unless arguments.nil?
+      params["arguments"] = JSONValue.any(arguments) unless arguments.nil?
       decoding("tools/call") { CallToolResult.from_json(request("tools/call", params, options).to_json) }
     end
 
@@ -106,7 +106,7 @@ module MCPC
 
     def get_prompt(name : String, arguments : Hash(String, String)? = nil, options = DEFAULT_OPTIONS) : PromptResult
       params = Params{"name" => JSON::Any.new(name)}
-      params["arguments"] = Json.any(arguments) if arguments
+      params["arguments"] = JSONValue.any(arguments) if arguments
       decoding("prompts/get") { PromptResult.from_json(request("prompts/get", params, options).to_json) }
     end
 
@@ -120,7 +120,7 @@ module MCPC
     # has no named method for. *params* is anything that serializes to a
     # JSON object.
     def request(method : String, params = Params.new, options = DEFAULT_OPTIONS) : JSON::Any
-      era.request(method, Json.any(params).as_h, options)
+      era.request(method, JSONValue.any(params).as_h, options)
     end
 
     private def list(method : String, key : String, type : T.class, options : RequestOptions) : Array(T) forall T

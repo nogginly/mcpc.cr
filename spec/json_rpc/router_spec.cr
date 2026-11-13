@@ -1,11 +1,11 @@
 require "../spec_helper"
 
-private def router_with(server : FakeServer) : {MCPC::JsonRpc::Router, FakeTransport}
+private def router_with(server : FakeServer) : {MCPC::JSONRPC::Router, FakeTransport}
   transport = FakeTransport.new(server)
-  {MCPC::JsonRpc::Router.new(transport), transport}
+  {MCPC::JSONRPC::Router.new(transport), transport}
 end
 
-describe MCPC::JsonRpc::Router do
+describe MCPC::JSONRPC::Router do
   it "returns the result of the response with the matching id" do
     server = FakeServer.new
     server.on("echo", &.params)
@@ -37,12 +37,12 @@ describe MCPC::JsonRpc::Router do
     slow.await["name"].should eq("slow")
   end
 
-  it "raises RpcError for an error response" do
+  it "raises RPCError for an error response" do
     server = FakeServer.new
     server.fail_with("fail", -32602, "Unknown tool", {"tool" => "x"})
     router, _ = router_with(server)
 
-    error = expect_raises(MCPC::RpcError, "Unknown tool") { router.open("fail").await }
+    error = expect_raises(MCPC::RPCError, "Unknown tool") { router.open("fail").await }
     error.code.should eq(-32602)
     error.data.should eq(JSON.parse(%({"tool":"x"})))
   end
@@ -62,7 +62,7 @@ describe MCPC::JsonRpc::Router do
     release = Channel(Nil).new
     server.on("work") { release.receive; {"done" => true} }
     router, _ = router_with(server)
-    asked = [] of MCPC::JsonRpc::Id
+    asked = [] of MCPC::JSONRPC::Id
     router.on_request { |request| asked << request.id }
 
     call = router.open("work")

@@ -5,7 +5,7 @@ private def text_of(report : MCPCProbe::Report) : String
 end
 
 private def json_of(report : MCPCProbe::Report) : JSON::Any
-  JSON.parse(String.build { |io| MCPCProbe::JsonRenderer.new(io).render(report) })
+  JSON.parse(String.build { |io| MCPCProbe::JSONRenderer.new(io).render(report) })
 end
 
 private def failed_report : MCPCProbe::Report
@@ -67,7 +67,7 @@ describe MCPCProbe::TextRenderer do
   end
 end
 
-describe MCPCProbe::JsonRenderer do
+describe MCPCProbe::JSONRenderer do
   it "writes the whole report as JSON" do
     json = json_of(survey(well_stocked_server)[0])
 

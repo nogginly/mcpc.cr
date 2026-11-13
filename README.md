@@ -170,7 +170,7 @@ Everything raised is an `MCPC::Error`.
 
 | Error | Meaning |
 |---|---|
-| `RpcError` | The server refused the request. Has `code` and `data`. |
+| `RPCError` | The server refused the request. Has `code` and `data`. |
 | `TimeoutError` | No answer in time. |
 | `CancelledError` | Your `Cancellation` was cancelled. |
 | `InputRequiredError` | The server wants input and there is no handler, or it kept asking. |
@@ -178,8 +178,8 @@ Everything raised is an `MCPC::Error`.
 | `UnsupportedVersionError` | Client and server share no protocol revision. |
 | `TransportError` | The server could not be reached. |
 | `ConnectionClosedError` | The connection ended mid-request. A `TransportError`. |
-| `HttpError` | An HTTP refusal such as 401. Has `status` and `body`. A `TransportError`. |
-| `SessionExpiredError` | The HTTP session is gone; make a new client. An `HttpError`. |
+| `HTTPError` | An HTTP refusal such as 401. Has `status` and `body`. A `TransportError`. |
+| `SessionExpiredError` | The HTTP session is gone; make a new client. An `HTTPError`. |
 | `NotConnectedError` | Called before `connect` or after `close`. |
 
 ## Configuration

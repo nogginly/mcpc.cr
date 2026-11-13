@@ -33,7 +33,7 @@ module MCPC
       end
 
       def request(method : String, params : Params, options : RequestOptions) : JSON::Any
-        exchange(method, Json.with_meta(params, options.meta), @headers, options)
+        exchange(method, JSONValue.with_meta(params, options.meta), @headers, options)
       end
 
       # List changes arrive unasked in this era, so only resource
@@ -52,11 +52,11 @@ module MCPC
         request_log_level
       end
 
-      protected def handle_request(request : JsonRpc::Request) : Nil
+      protected def handle_request(request : JSONRPC::Request) : Nil
         @server_requests.answer(request)
       end
 
-      protected def cancel_on_server(id : JsonRpc::Id, reason : String?) : Nil
+      protected def cancel_on_server(id : JSONRPC::Id, reason : String?) : Nil
         @context.router.notify("notifications/cancelled", cancelled_params(id, reason), @headers)
         @context.transport.abort(id)
       end

@@ -96,21 +96,21 @@ describe "result types, read from the specification's examples" do
   end
 
   it "reads the events carried by notification examples" do
-    progress = MCPC::JsonRpc.parse(fixture("ProgressNotification", "progress-message")).as(MCPC::JsonRpc::Notification)
+    progress = MCPC::JSONRPC.parse(fixture("ProgressNotification", "progress-message")).as(MCPC::JSONRPC::Notification)
     MCPC::NotificationEvents.translate(progress).should be_a(MCPC::Event::Progress)
 
     name = Dir.children(FIXTURES / "LoggingMessageNotification").first.rchop(".json")
-    log = MCPC::JsonRpc.parse(fixture("LoggingMessageNotification", name)).as(MCPC::JsonRpc::Notification)
+    log = MCPC::JSONRPC.parse(fixture("LoggingMessageNotification", name)).as(MCPC::JSONRPC::Notification)
     MCPC::NotificationEvents.translate(log).should be_a(MCPC::Event::LogMessage)
 
     name = Dir.children(FIXTURES / "ResourceUpdatedNotification").first.rchop(".json")
-    updated = MCPC::JsonRpc.parse(fixture("ResourceUpdatedNotification", name)).as(MCPC::JsonRpc::Notification)
+    updated = MCPC::JSONRPC.parse(fixture("ResourceUpdatedNotification", name)).as(MCPC::JSONRPC::Notification)
     MCPC::NotificationEvents.translate(updated).should be_a(MCPC::Event::ResourceUpdated)
   end
 
   it "has no event for a malformed or unknown notification" do
-    malformed = MCPC::JsonRpc::Notification.new("notifications/progress", JSON.parse(%({"progress":"lots"})))
+    malformed = MCPC::JSONRPC::Notification.new("notifications/progress", JSON.parse(%({"progress":"lots"})))
     MCPC::NotificationEvents.translate(malformed).should be_nil
-    MCPC::NotificationEvents.translate(MCPC::JsonRpc::Notification.new("notifications/unheard_of")).should be_nil
+    MCPC::NotificationEvents.translate(MCPC::JSONRPC::Notification.new("notifications/unheard_of")).should be_nil
   end
 end

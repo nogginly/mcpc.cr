@@ -2,10 +2,10 @@ module MCPC
   module Era
     # One open `subscriptions/listen` request.
     class ListenStream
-      getter call : JsonRpc::Call
+      getter call : JSONRPC::Call
       getter? acknowledged = false
 
-      def initialize(@call : JsonRpc::Call)
+      def initialize(@call : JSONRPC::Call)
         @opening = Channel(SubscriptionFilter | Exception).new(1)
       end
 

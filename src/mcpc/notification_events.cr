@@ -2,7 +2,7 @@ module MCPC
   # Turns server notifications into events.
   module NotificationEvents
     # Returns the event for *notification*, or nil when it has none or is malformed.
-    def self.translate(notification : JsonRpc::Notification) : Event?
+    def self.translate(notification : JSONRPC::Notification) : Event?
       params = notification.params.to_json
       case notification.method
       when "notifications/progress"               then Event::Progress.from_json(params)

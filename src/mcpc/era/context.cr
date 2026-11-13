@@ -3,7 +3,7 @@ module MCPC
   module Era
     # The collaborators every era strategy works with.
     record Context,
-      router : JsonRpc::Router,
+      router : JSONRPC::Router,
       transport : Transport,
       config : Config,
       events : EventDispatcher,

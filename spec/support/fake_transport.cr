@@ -1,7 +1,7 @@
 # An in-memory transport wired to a `FakeServer`.
 class FakeTransport < MCPC::Transport
-  getter sent = [] of {MCPC::JsonRpc::Message, Headers}
-  getter aborted = [] of MCPC::JsonRpc::Id
+  getter sent = [] of {MCPC::JSONRPC::Message, Headers}
+  getter aborted = [] of MCPC::JSONRPC::Id
   getter? opened = false
   getter? closed = false
 
@@ -17,13 +17,13 @@ class FakeTransport < MCPC::Transport
     @opened = true
   end
 
-  def send(message : MCPC::JsonRpc::Message, headers : Headers) : Nil
+  def send(message : MCPC::JSONRPC::Message, headers : Headers) : Nil
     raise MCPC::ConnectionClosedError.new if closed?
     sent << {message, headers}
     spawn { @server.receive(message) }
   end
 
-  def abort(id : MCPC::JsonRpc::Id) : Bool
+  def abort(id : MCPC::JSONRPC::Id) : Bool
     aborted << id
     aborts_requests?
   end
@@ -40,7 +40,7 @@ class FakeTransport < MCPC::Transport
   end
 
   def headers_for(method : String) : Headers
-    sent.compact_map { |message, headers| headers if message.as?(MCPC::JsonRpc::Request).try(&.method) == method }.last
+    sent.compact_map { |message, headers| headers if message.as?(MCPC::JSONRPC::Request).try(&.method) == method }.last
   end
 end
 

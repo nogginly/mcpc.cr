@@ -1,6 +1,6 @@
 module MCPCProbe
   # Runs the command: reads the options, probes the server, prints the report.
-  class Cli
+  class CLI
     EXIT_OK      = 0
     EXIT_PROBLEM = 1
     EXIT_USAGE   = 2
@@ -36,8 +36,8 @@ module MCPCProbe
       end
     end
 
-    private def renderer(options : Options) : TextRenderer | JsonRenderer
-      options.json? ? JsonRenderer.new(@output) : TextRenderer.new(@output)
+    private def renderer(options : Options) : TextRenderer | JSONRenderer
+      options.json? ? JSONRenderer.new(@output) : TextRenderer.new(@output)
     end
   end
 end

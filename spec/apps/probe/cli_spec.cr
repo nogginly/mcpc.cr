@@ -8,13 +8,13 @@ end
 private def run_probe_with(arguments : Array(String), environment = no_environment) : {Int32, String, String}
   output = IO::Memory.new
   errors = IO::Memory.new
-  status = MCPCProbe::Cli.new(arguments, environment, output, errors).run
+  status = MCPCProbe::CLI.new(arguments, environment, output, errors).run
   {status, output.to_s, errors.to_s}
 end
 
-describe MCPCProbe::Cli do
+describe MCPCProbe::CLI do
   it "probes an HTTP server and exits 0" do
-    HttpFakeServer.open(well_stocked_server) do |http|
+    HTTPFakeServer.open(well_stocked_server) do |http|
       status, output, errors = run_probe("--timeout", "2", http.url)
 
       status.should eq(0)
@@ -26,21 +26,21 @@ describe MCPCProbe::Cli do
 
   it "names itself to the server" do
     server = well_stocked_server
-    HttpFakeServer.open(server) do |http|
+    HTTPFakeServer.open(server) do |http|
       run_probe(http.url)
       params_of(server.last_request("initialize"))["clientInfo"]["name"].should eq("mcpc-probe")
     end
   end
 
   it "sends credentials taken from the environment" do
-    HttpFakeServer.open(well_stocked_server) do |http|
+    HTTPFakeServer.open(well_stocked_server) do |http|
       run_probe("--bearer-env", "TOKEN", http.url, environment: {"TOKEN" => "s3cret"})
       http.headers_for("tools/list")["Authorization"].should eq("Bearer s3cret")
     end
   end
 
   it "reports as JSON when asked" do
-    HttpFakeServer.open(well_stocked_server) do |http|
+    HTTPFakeServer.open(well_stocked_server) do |http|
       status, output, _ = run_probe("--json", http.url)
       status.should eq(0)
       JSON.parse(output)["ok"].should be_true
@@ -50,7 +50,7 @@ describe MCPCProbe::Cli do
   it "exits 1 and explains when the server refuses the credentials" do
     server = FakeServer.new
     server.fail_with("server/discover", -32600, "Unauthorized")
-    HttpFakeServer.open(server) do |http|
+    HTTPFakeServer.open(server) do |http|
       http.error_statuses[-32600] = 401
       status, output, _ = run_probe(http.url)
 
@@ -62,7 +62,7 @@ describe MCPCProbe::Cli do
   it "exits 1 when an advertised list cannot be read" do
     server = well_stocked_server
     server.fail_with("tools/list", -32603, "boom")
-    HttpFakeServer.open(server) do |http|
+    HTTPFakeServer.open(server) do |http|
       run_probe(http.url)[0].should eq(1)
     end
   end

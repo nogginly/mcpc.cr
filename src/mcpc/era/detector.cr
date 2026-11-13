@@ -16,12 +16,12 @@ module MCPC
       # when the server is modern but shares no revision with this client.
       def detect : Strategy
         stateless_or_handshake(discover)
-      rescue error : RpcError
+      rescue error : RPCError
         raise error if CLIENT_FAULTS.includes?(error.code)
         handshake_unless_modern_only(error)
       rescue TimeoutError
         Handshake.open(@context)
-      rescue error : HttpError
+      rescue error : HTTPError
         raise error unless LEGACY_SIGNALS.includes?(error.status)
         Handshake.open(@context)
       end
@@ -48,7 +48,7 @@ module MCPC
         end
       end
 
-      private def handshake_unless_modern_only(error : RpcError) : Strategy
+      private def handshake_unless_modern_only(error : RPCError) : Strategy
         return Handshake.open(@context) unless error.code == Protocol::ErrorCode::UNSUPPORTED_PROTOCOL_VERSION
         supported = error.data.try(&.["supported"]?).try(&.as_a?.try(&.map(&.as_s))) || [] of String
         handshake_if_offered(supported)

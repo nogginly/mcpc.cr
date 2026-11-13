@@ -6,11 +6,11 @@ module MCPC
       end
 
       # Replies on a fiber of its own, because answering may wait on a person.
-      def answer(request : JsonRpc::Request) : Nil
+      def answer(request : JSONRPC::Request) : Nil
         spawn(name: "mcpc-server-request") { reply(request) }
       end
 
-      private def reply(request : JsonRpc::Request)
+      private def reply(request : JSONRPC::Request)
         @context.router.respond(request.id, result_for(request), @headers)
       rescue error : InputRequiredError
         refuse(request, Protocol::ErrorCode::METHOD_NOT_FOUND, error)
@@ -22,12 +22,12 @@ module MCPC
         refuse(request, Protocol::ErrorCode::INTERNAL_ERROR, error)
       end
 
-      private def result_for(request : JsonRpc::Request) : JSON::Any
+      private def result_for(request : JSONRPC::Request) : JSON::Any
         return JSON::Any.new(Params.new) if request.method == "ping"
         @context.input.answer(request.method, request.params)
       end
 
-      private def refuse(request : JsonRpc::Request, code : Int32, cause : Exception)
+      private def refuse(request : JSONRPC::Request, code : Int32, cause : Exception)
         @context.router.reject(request.id, code, cause.message || cause.class.name, @headers)
       rescue error : TransportError
         Log.debug { "could not refuse #{request.method}: #{error.message}" }

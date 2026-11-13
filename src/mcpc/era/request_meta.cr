@@ -13,7 +13,7 @@ module MCPC
 
       # Returns *params* carrying the required entries and those of *options*.
       def apply(params : Params, options = RequestOptions.new) : Params
-        Json.with_meta(params, @entries.merge(options.meta))
+        JSONValue.with_meta(params, @entries.merge(options.meta))
       end
     end
   end

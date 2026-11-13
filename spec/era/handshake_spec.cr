@@ -1,7 +1,7 @@
 require "../spec_helper"
 
-private def sent_notifications(transport : FakeTransport, method : String) : Array(MCPC::JsonRpc::Notification)
-  transport.sent.map(&.[0]).select(MCPC::JsonRpc::Notification).select { |notification| notification.method == method }
+private def sent_notifications(transport : FakeTransport, method : String) : Array(MCPC::JSONRPC::Notification)
+  transport.sent.map(&.[0]).select(MCPC::JSONRPC::Notification).select { |notification| notification.method == method }
 end
 
 describe MCPC::Era::Handshake do

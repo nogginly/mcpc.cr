@@ -1,7 +1,7 @@
 require "./spec_helper"
 
-private def http_client(server : FakeServer, & : MCPC::Client, HttpFakeServer ->)
-  HttpFakeServer.open(server) do |http|
+private def http_client(server : FakeServer, & : MCPC::Client, HTTPFakeServer ->)
+  HTTPFakeServer.open(server) do |http|
     client = MCPC::Client.http(http.url, {"Authorization" => "Bearer secret"}, fast_config)
     begin
       yield client, http
@@ -51,7 +51,7 @@ describe "MCPC::Client over Streamable HTTP" do
       http_client(server) do |client, http|
         http.error_statuses[-32602] = 400
         client.connect
-        expect_raises(MCPC::RpcError, "Unknown tool: nope") { client.call_tool("nope") }
+        expect_raises(MCPC::RPCError, "Unknown tool: nope") { client.call_tool("nope") }
         server.requests_for("initialize").should be_empty
       end
     end
@@ -118,7 +118,7 @@ describe "MCPC::Client over Streamable HTTP" do
 
     it "ends the session when closed" do
       server = FakeServer.legacy
-      HttpFakeServer.open(server) do |http|
+      HTTPFakeServer.open(server) do |http|
         http.session_id = "session-1"
         client = MCPC::Client.http(http.url, config: fast_config)
         client.connect
@@ -176,7 +176,7 @@ describe "MCPC::Client over Streamable HTTP" do
     server.fail_with("server/discover", -32600, "Unauthorized")
     http_client(server) do |client, http|
       http.error_statuses[-32600] = 401
-      expect_raises(MCPC::HttpError, "HTTP 401") { client.connect }
+      expect_raises(MCPC::HTTPError, "HTTP 401") { client.connect }
       server.requests_for("initialize").should be_empty
     end
   end

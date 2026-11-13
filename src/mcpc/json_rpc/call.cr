@@ -1,5 +1,5 @@
 module MCPC
-  module JsonRpc
+  module JSONRPC
     # One request that has been sent and not yet answered.
     class Call
       getter id : Id
@@ -9,7 +9,7 @@ module MCPC
 
       # Blocks until the response arrives and returns its `result`.
       #
-      # Raises `RpcError` for an error response, `TimeoutError` after *timeout*,
+      # Raises `RPCError` for an error response, `TimeoutError` after *timeout*,
       # `CancelledError` once *cancellation* is cancelled, and whatever error
       # ended the connection.
       def await(timeout : Time::Span? = nil, cancellation : Cancellation? = nil) : JSON::Any

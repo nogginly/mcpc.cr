@@ -1,6 +1,6 @@
 module MCPC
   # Reads a Server-Sent Events stream.
-  class Transport::SseReader
+  class Transport::SSEReader
     MESSAGE_EVENT = "message"
 
     def initialize(@io : IO)

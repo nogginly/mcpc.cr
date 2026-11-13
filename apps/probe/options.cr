@@ -61,7 +61,7 @@ module MCPCProbe
       first = words.first? || raise UsageError.new("Name a server: a URL, or a command after `--`.")
       return StdioTarget.new(first, words[1..]) unless first.matches?(/\Ahttps?:\/\//)
       raise UsageError.new("Give one URL only.") if words.size > 1
-      HttpTarget.new(first, @headers)
+      HTTPTarget.new(first, @headers)
     end
 
     private def add_header(text : String, separator : Char)

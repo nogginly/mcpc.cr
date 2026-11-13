@@ -19,7 +19,7 @@ module MCPC
     property log_level : String? = nil
 
     def client_info : JSON::Any
-      Json.any({"name" => client_name, "version" => client_version})
+      JSONValue.any({"name" => client_name, "version" => client_version})
     end
   end
 end

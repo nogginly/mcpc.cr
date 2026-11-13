@@ -4,8 +4,8 @@ private def options(*arguments : String, environment = no_environment) : MCPCPro
   MCPCProbe::Options.new(arguments.to_a, environment)
 end
 
-private def http_target(*arguments : String, environment = no_environment) : MCPCProbe::HttpTarget
-  options(*arguments, environment: environment).target.as(MCPCProbe::HttpTarget)
+private def http_target(*arguments : String, environment = no_environment) : MCPCProbe::HTTPTarget
+  options(*arguments, environment: environment).target.as(MCPCProbe::HTTPTarget)
 end
 
 describe MCPCProbe::Options do

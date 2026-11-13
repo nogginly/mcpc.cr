@@ -7,7 +7,7 @@ module MCPCProbe
     abstract def client(config : MCPC::Config) : MCPC::Client
   end
 
-  struct HttpTarget < Target
+  struct HTTPTarget < Target
     getter url : String
     getter headers : Hash(String, String)
 
