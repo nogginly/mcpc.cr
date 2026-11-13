@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # The `_meta` entries a 2026-07-28 server requires on every request.
     class RequestMeta

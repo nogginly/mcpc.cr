@@ -25,8 +25,8 @@ def wait_until(limit = 2.seconds, & : -> Bool) : Nil
   end
 end
 
-def fast_config : Mcpc::Config
-  Mcpc::Config.new.tap do |config|
+def fast_config : MCPC::Config
+  MCPC::Config.new.tap do |config|
     config.probe_timeout = 200.milliseconds
     config.request_timeout = 2.seconds
   end
@@ -36,10 +36,10 @@ def text_result(text : String, error = false)
   {"content" => [{"type" => "text", "text" => text}], "isError" => error}
 end
 
-def params_of(message : Mcpc::JsonRpc::Request | Mcpc::JsonRpc::Notification) : JSON::Any
+def params_of(message : MCPC::JsonRpc::Request | MCPC::JsonRpc::Notification) : JSON::Any
   message.params || raise "#{message.method} has no params"
 end
 
-def result_of(response : Mcpc::JsonRpc::Response) : JSON::Any
+def result_of(response : MCPC::JsonRpc::Response) : JSON::Any
   response.result || raise "response #{response.id} has no result"
 end

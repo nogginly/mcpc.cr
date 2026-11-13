@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # The `params` object of a JSON-RPC message.
   alias Params = Hash(String, JSON::Any)
 

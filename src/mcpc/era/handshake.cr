@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # The 2024-11-05 to 2025-11-25 revisions: the connection opens with
     # `initialize`, and the server may send requests of its own.

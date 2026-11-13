@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Follows a paginated list to its end.
   module Pagination
     # Yields nil, then each cursor the server hands back, and returns the

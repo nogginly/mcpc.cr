@@ -12,6 +12,6 @@ require "./cli"
 
 # Connects to one MCP server and reports what it advertises, to show
 # whether the server works with this shard's client.
-module McpcProbe
+module MCPCProbe
   NAME = "mcpc-probe"
 end

@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Settings a client is created with. Change them before `Client#connect`.
   class Config
     # How this client names itself to servers.

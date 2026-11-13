@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # Answers the requests a handshake-era server sends to the client.
     class ServerRequests

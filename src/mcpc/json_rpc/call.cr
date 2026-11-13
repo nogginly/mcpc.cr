@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module JsonRpc
     # One request that has been sent and not yet answered.
     class Call

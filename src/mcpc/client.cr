@@ -1,8 +1,8 @@
-module Mcpc
+module MCPC
   # A connection to one MCP server.
   #
   # ```
-  # client = Mcpc::Client.stdio("npx", ["-y", "@modelcontextprotocol/server-everything"])
+  # client = MCPC::Client.stdio("npx", ["-y", "@modelcontextprotocol/server-everything"])
   # client.on_event { |event| puts event }
   # client.connect
   # client.list_tools.each { |tool| puts tool.name }

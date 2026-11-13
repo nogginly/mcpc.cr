@@ -133,7 +133,7 @@ An app under `apps/` is a customer of the shard, not part of it.
 3. Each app has a `main.cr` that only starts it, and a `targets:` entry in `shard.yml`.
    Everything else lives in small classes that specs can load without running the app.
 4. Text written by a server is untrusted. Before printing it to a terminal, pass it through
-   something like `McpcProbe::CleanText`, which removes control characters.
+   something like `MCPCProbe::CleanText`, which removes control characters.
 
 ### Continuous integration
 

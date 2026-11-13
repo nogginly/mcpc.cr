@@ -1,14 +1,14 @@
 require "../spec_helper"
 
-private def detect(server : FakeServer, config = fast_config) : {Mcpc::Era::Strategy, FakeTransport}
+private def detect(server : FakeServer, config = fast_config) : {MCPC::Era::Strategy, FakeTransport}
   transport = FakeTransport.new(server)
   transport.uses_headers = true
-  context = Mcpc::Era::Context.new(Mcpc::JsonRpc::Router.new(transport), transport, config,
-    Mcpc::EventDispatcher.new, Mcpc::ClientInput.new)
-  {Mcpc::Era::Detector.new(context).detect, transport}
+  context = MCPC::Era::Context.new(MCPC::JsonRpc::Router.new(transport), transport, config,
+    MCPC::EventDispatcher.new, MCPC::ClientInput.new)
+  {MCPC::Era::Detector.new(context).detect, transport}
 end
 
-describe Mcpc::Era::Detector do
+describe MCPC::Era::Detector do
   it "probes with a self-describing server/discover request" do
     server = FakeServer.modern
     _, transport = detect(server)
@@ -26,7 +26,7 @@ describe Mcpc::Era::Detector do
   it "chooses the stateless era when discovery succeeds" do
     strategy, _ = detect(FakeServer.modern)
 
-    strategy.should be_a(Mcpc::Era::Stateless)
+    strategy.should be_a(MCPC::Era::Stateless)
     strategy.server.protocol_version.should eq("2026-07-28")
     strategy.server.stateless?.should be_true
     strategy.server.implementation.try(&.name).should eq("fake-modern")
@@ -43,7 +43,7 @@ describe Mcpc::Era::Detector do
     server = FakeServer.legacy
     strategy, _ = detect(server)
 
-    strategy.should be_a(Mcpc::Era::Handshake)
+    strategy.should be_a(MCPC::Era::Handshake)
     strategy.server.protocol_version.should eq("2025-11-25")
     server.requests.map(&.method).should eq(["server/discover", "initialize"])
   end
@@ -51,7 +51,7 @@ describe Mcpc::Era::Detector do
   it "does not key the fallback to one error code" do
     server = FakeServer.legacy
     server.fail_with("server/discover", -32600, "Missing Mcp-Session-Id")
-    detect(server)[0].should be_a(Mcpc::Era::Handshake)
+    detect(server)[0].should be_a(MCPC::Era::Handshake)
   end
 
   it "falls back to the handshake when the probe goes unanswered" do
@@ -59,15 +59,15 @@ describe Mcpc::Era::Detector do
     server.on("server/discover") { FakeServer::SILENT }
     strategy, transport = detect(server)
 
-    strategy.should be_a(Mcpc::Era::Handshake)
-    transport.sent.map(&.[0]).select(Mcpc::JsonRpc::Notification).map(&.method).should eq(["notifications/initialized"])
+    strategy.should be_a(MCPC::Era::Handshake)
+    transport.sent.map(&.[0]).select(MCPC::JsonRpc::Notification).map(&.method).should eq(["notifications/initialized"])
   end
 
   it "falls back to the handshake when a dual-era server offers only older revisions" do
     server = FakeServer.legacy
     server.fail_with("server/discover", -32022, "Unsupported protocol version",
       {"supported" => ["2025-11-25"], "requested" => "2026-07-28"})
-    detect(server)[0].should be_a(Mcpc::Era::Handshake)
+    detect(server)[0].should be_a(MCPC::Era::Handshake)
   end
 
   it "falls back when discovery succeeds but lists only older revisions" do
@@ -84,7 +84,7 @@ describe Mcpc::Era::Detector do
     server.fail_with("server/discover", -32022, "Unsupported protocol version",
       {"supported" => ["2027-01-01"], "requested" => "2026-07-28"})
 
-    expect_raises(Mcpc::UnsupportedVersionError, "2027-01-01") { detect(server) }
+    expect_raises(MCPC::UnsupportedVersionError, "2027-01-01") { detect(server) }
     server.requests.map(&.method).should_not contain("initialize")
   end
 
@@ -93,12 +93,12 @@ describe Mcpc::Era::Detector do
       server = FakeServer.legacy
       server.fail_with("server/discover", code, fault)
 
-      expect_raises(Mcpc::RpcError, fault) { detect(server) }
+      expect_raises(MCPC::RpcError, fault) { detect(server) }
       server.requests.map(&.method).should_not contain("initialize")
     end
   end
 
   it "raises when a handshake server insists on a revision the client does not speak" do
-    expect_raises(Mcpc::UnsupportedVersionError, "1999-01-01") { detect(FakeServer.legacy(version: "1999-01-01")) }
+    expect_raises(MCPC::UnsupportedVersionError, "1999-01-01") { detect(FakeServer.legacy(version: "1999-01-01")) }
   end
 end

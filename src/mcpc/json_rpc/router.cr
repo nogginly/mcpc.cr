@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module JsonRpc
     # Assigns request ids, matches responses to waiting callers, and hands
     # inbound requests and notifications to whoever registered for them.

@@ -8,11 +8,11 @@ end
 private def run_probe_with(arguments : Array(String), environment = no_environment) : {Int32, String, String}
   output = IO::Memory.new
   errors = IO::Memory.new
-  status = McpcProbe::Cli.new(arguments, environment, output, errors).run
+  status = MCPCProbe::Cli.new(arguments, environment, output, errors).run
   {status, output.to_s, errors.to_s}
 end
 
-describe McpcProbe::Cli do
+describe MCPCProbe::Cli do
   it "probes an HTTP server and exits 0" do
     HttpFakeServer.open(well_stocked_server) do |http|
       status, output, errors = run_probe("--timeout", "2", http.url)
@@ -82,7 +82,7 @@ describe McpcProbe::Cli do
   end
 
   it "shows help and the version without probing anything" do
-    run_probe("--help").should eq({0, McpcProbe::Options.new(["--help"], no_environment).usage + "\n", ""})
-    run_probe("--version").should eq({0, "mcpc-probe #{Mcpc::VERSION}\n", ""})
+    run_probe("--help").should eq({0, MCPCProbe::Options.new(["--help"], no_environment).usage + "\n", ""})
+    run_probe("--version").should eq({0, "mcpc-probe #{MCPC::VERSION}\n", ""})
   end
 end

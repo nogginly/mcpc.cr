@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # One open `subscriptions/listen` request.
     class ListenStream

@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # Finds out which era a server belongs to, once per connection.
     class Detector

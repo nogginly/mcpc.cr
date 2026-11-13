@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Names and numbers fixed by the MCP specification.
   module Protocol
     MODERN_VERSION  = "2026-07-28"

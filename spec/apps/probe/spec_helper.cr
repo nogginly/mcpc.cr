@@ -13,10 +13,10 @@ def well_stocked_server : FakeServer
   end
 end
 
-def survey(server : FakeServer) : {McpcProbe::Report, FakeTransport}
+def survey(server : FakeServer) : {MCPCProbe::Report, FakeTransport}
   transport = FakeTransport.new(server)
-  client = Mcpc::Client.new(transport, fast_config)
-  {McpcProbe::Survey.new(client, "fake-target").run, transport}
+  client = MCPC::Client.new(transport, fast_config)
+  {MCPCProbe::Survey.new(client, "fake-target").run, transport}
 end
 
 def no_environment : Hash(String, String)

@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Base class of every error this shard raises.
   class Error < Exception
   end

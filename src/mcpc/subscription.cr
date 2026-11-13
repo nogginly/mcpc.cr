@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Which change notifications to receive as events.
   struct SubscriptionFilter
     include JSON::Serializable

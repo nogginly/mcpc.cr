@@ -2,7 +2,7 @@ require "http/server"
 
 # Serves a `FakeServer` over Streamable HTTP on a local port.
 class HttpFakeServer
-  record Received, method : String, headers : HTTP::Headers, message : Mcpc::JsonRpc::Message?
+  record Received, method : String, headers : HTTP::Headers, message : MCPC::JsonRpc::Message?
 
   getter received = [] of Received
   getter url : String
@@ -17,7 +17,7 @@ class HttpFakeServer
   property? server_stream = false
 
   def initialize(@server : FakeServer)
-    @pushes = Channel(Mcpc::JsonRpc::Message).new(16)
+    @pushes = Channel(MCPC::JsonRpc::Message).new(16)
     @server.connect { |message| @pushes.send(message) }
     @http = HTTP::Server.new { |context| handle(context) }
     address = @http.bind_tcp("127.0.0.1", 0)
@@ -39,7 +39,7 @@ class HttpFakeServer
   end
 
   def headers_for(method : String) : HTTP::Headers
-    entry = received.reverse_each.find { |candidate| candidate.message.as?(Mcpc::JsonRpc::Request).try(&.method) == method }
+    entry = received.reverse_each.find { |candidate| candidate.message.as?(MCPC::JsonRpc::Request).try(&.method) == method }
     entry.try(&.headers) || raise "no #{method} request was received"
   end
 
@@ -57,21 +57,21 @@ class HttpFakeServer
   end
 
   private def post(context : HTTP::Server::Context)
-    message = Mcpc::JsonRpc.parse(context.request.body.try(&.gets_to_end) || "")
+    message = MCPC::JsonRpc.parse(context.request.body.try(&.gets_to_end) || "")
     record(context, message)
     return context.response.status_code = 404 if session_missing?(context, message)
     case message
-    in Mcpc::JsonRpc::Request
+    in MCPC::JsonRpc::Request
       streaming? ? reply_with_stream(context, message) : reply_with_json(context, message)
-    in Mcpc::JsonRpc::Notification, Mcpc::JsonRpc::Response
+    in MCPC::JsonRpc::Notification, MCPC::JsonRpc::Response
       @server.receive(message)
       context.response.status_code = 202
     end
   end
 
-  private def reply_with_json(context, request : Mcpc::JsonRpc::Request)
-    emitted = [] of Mcpc::JsonRpc::Message
-    @server.receive(request, ->(message : Mcpc::JsonRpc::Message) { emitted << message; nil })
+  private def reply_with_json(context, request : MCPC::JsonRpc::Request)
+    emitted = [] of MCPC::JsonRpc::Message
+    @server.receive(request, ->(message : MCPC::JsonRpc::Message) { emitted << message; nil })
     reply = emitted.last?
     context.response.status_code = status_for(reply)
     issue_session(context, request)
@@ -80,10 +80,10 @@ class HttpFakeServer
     context.response.print(reply.to_json)
   end
 
-  private def reply_with_stream(context, request : Mcpc::JsonRpc::Request)
+  private def reply_with_stream(context, request : MCPC::JsonRpc::Request)
     issue_session(context, request)
     start_stream(context)
-    @server.receive(request, ->(message : Mcpc::JsonRpc::Message) { write_event(context, message) })
+    @server.receive(request, ->(message : MCPC::JsonRpc::Message) { write_event(context, message) })
   end
 
   private def stream_pushes(context)
@@ -101,29 +101,29 @@ class HttpFakeServer
     context.response.flush
   end
 
-  private def write_event(context, message : Mcpc::JsonRpc::Message) : Nil
+  private def write_event(context, message : MCPC::JsonRpc::Message) : Nil
     context.response.print("event: message\ndata: #{message.to_json}\n\n")
     context.response.flush
   rescue IO::Error
   end
 
-  private def status_for(reply : Mcpc::JsonRpc::Message?) : Int32
-    error = reply.as?(Mcpc::JsonRpc::Response).try(&.error) || return 200
+  private def status_for(reply : MCPC::JsonRpc::Message?) : Int32
+    error = reply.as?(MCPC::JsonRpc::Response).try(&.error) || return 200
     error_statuses[error.code]? || 200
   end
 
-  private def issue_session(context, request : Mcpc::JsonRpc::Request)
+  private def issue_session(context, request : MCPC::JsonRpc::Request)
     return unless request.method == "initialize"
     session_id.try { |id| context.response.headers["Mcp-Session-Id"] = id }
   end
 
   private def session_missing?(context, message) : Bool
     expected = session_id || return false
-    return false if message.as?(Mcpc::JsonRpc::Request).try(&.method).in?("initialize", "server/discover")
+    return false if message.as?(MCPC::JsonRpc::Request).try(&.method).in?("initialize", "server/discover")
     context.request.headers["Mcp-Session-Id"]? != expected
   end
 
-  private def record(context, message : Mcpc::JsonRpc::Message?)
+  private def record(context, message : MCPC::JsonRpc::Message?)
     received << Received.new(context.request.method, context.request.headers, message)
   end
 end

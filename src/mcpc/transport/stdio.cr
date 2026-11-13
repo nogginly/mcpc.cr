@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Runs the server as a subprocess and exchanges newline-delimited JSON
   # over its standard input and output.
   class Transport::Stdio < Transport

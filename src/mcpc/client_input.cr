@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Answers what a server asks of the client side. Only form-mode
   # elicitation is supported, and only once the application has
   # registered a handler for it.

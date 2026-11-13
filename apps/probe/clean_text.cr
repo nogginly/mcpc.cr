@@ -1,4 +1,4 @@
-module McpcProbe
+module MCPCProbe
   # Makes text written by a server safe to print on a terminal.
   module CleanText
     # Returns the first line of *text* without control characters, cut to *limit*.

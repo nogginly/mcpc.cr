@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Carries JSON-RPC messages to and from one server.
   #
   # Subclass it to add a transport. A subclass calls `deliver` for each

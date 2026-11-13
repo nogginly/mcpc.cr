@@ -1,4 +1,4 @@
-module McpcProbe
+module MCPCProbe
   # One thing a server listed: a tool, resource, template or prompt.
   record Item, name : String, description : String? = nil
 
@@ -10,7 +10,7 @@ module McpcProbe
     getter target : String
 
     # What the server said about itself; nil when the connection failed.
-    property server : Mcpc::ServerInfo?
+    property server : MCPC::ServerInfo?
 
     # Why the connection failed; nil when it succeeded.
     property failure : String?

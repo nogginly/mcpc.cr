@@ -8,7 +8,7 @@ class FakeServer
 
     def initialize(@code, message : String, data = nil)
       super(message)
-      @data = data.try { |value| Mcpc::Json.any(value) }
+      @data = data.try { |value| MCPC::Json.any(value) }
     end
   end
 
@@ -20,28 +20,28 @@ class FakeServer
 
   # What a handler uses to send messages that belong to the request in hand.
   class Exchange
-    def initialize(@emit : Mcpc::JsonRpc::Message ->)
+    def initialize(@emit : MCPC::JsonRpc::Message ->)
     end
 
     def notify(method : String, params = nil) : Nil
-      @emit.call(Mcpc::JsonRpc::Notification.new(method, params.try { |value| Mcpc::Json.any(value) }))
+      @emit.call(MCPC::JsonRpc::Notification.new(method, params.try { |value| MCPC::Json.any(value) }))
     end
 
-    def ask(id : Mcpc::JsonRpc::Id, method : String, params) : Nil
-      @emit.call(Mcpc::JsonRpc::Request.new(id, method, Mcpc::Json.any(params)))
+    def ask(id : MCPC::JsonRpc::Id, method : String, params) : Nil
+      @emit.call(MCPC::JsonRpc::Request.new(id, method, MCPC::Json.any(params)))
     end
   end
 
-  alias Request = Mcpc::JsonRpc::Request
+  alias Request = MCPC::JsonRpc::Request
   alias Handler = Request, Exchange -> JSON::Any | Silence
 
   getter requests = [] of Request
-  getter notifications = [] of Mcpc::JsonRpc::Notification
-  getter responses = [] of Mcpc::JsonRpc::Response
+  getter notifications = [] of MCPC::JsonRpc::Notification
+  getter responses = [] of MCPC::JsonRpc::Response
 
   def initialize
     @handlers = {} of String => Handler
-    @outbound = ->(_message : Mcpc::JsonRpc::Message) { }
+    @outbound = ->(_message : MCPC::JsonRpc::Message) { }
   end
 
   # A server of the handshake era.
@@ -68,7 +68,7 @@ class FakeServer
   def on(method : String, &block : Request, Exchange -> T) : Nil forall T
     @handlers[method] = ->(request : Request, exchange : Exchange) : JSON::Any | Silence {
       value = block.call(request, exchange)
-      value.is_a?(Silence) ? value : Mcpc::Json.any(value)
+      value.is_a?(Silence) ? value : MCPC::Json.any(value)
     }
   end
 
@@ -80,7 +80,7 @@ class FakeServer
   end
 
   # Where messages sent outside any request go.
-  def connect(&@outbound : Mcpc::JsonRpc::Message ->) : Nil
+  def connect(&@outbound : MCPC::JsonRpc::Message ->) : Nil
   end
 
   # Sends a notification that belongs to no request.
@@ -89,16 +89,16 @@ class FakeServer
   end
 
   # Sends a request to the client.
-  def ask(id : Mcpc::JsonRpc::Id, method : String, params) : Nil
+  def ask(id : MCPC::JsonRpc::Id, method : String, params) : Nil
     Exchange.new(@outbound).ask(id, method, params)
   end
 
   # Handles one inbound message, emitting what it produces through *emit*.
-  def receive(message : Mcpc::JsonRpc::Message, emit : Mcpc::JsonRpc::Message -> = @outbound) : Nil
+  def receive(message : MCPC::JsonRpc::Message, emit : MCPC::JsonRpc::Message -> = @outbound) : Nil
     case message
-    in Mcpc::JsonRpc::Request      then answer(message, emit)
-    in Mcpc::JsonRpc::Notification then notifications << message
-    in Mcpc::JsonRpc::Response     then responses << message
+    in MCPC::JsonRpc::Request      then answer(message, emit)
+    in MCPC::JsonRpc::Notification then notifications << message
+    in MCPC::JsonRpc::Response     then responses << message
     end
   end
 
@@ -110,13 +110,13 @@ class FakeServer
     requests_for(method).last
   end
 
-  private def answer(request : Request, emit : Mcpc::JsonRpc::Message ->)
+  private def answer(request : Request, emit : MCPC::JsonRpc::Message ->)
     requests << request
     handler = @handlers[request.method]? || raise Fault.new(-32601, "Method not found")
     result = handler.call(request, Exchange.new(emit))
-    emit.call(Mcpc::JsonRpc::Response.success(request.id, result)) if result.is_a?(JSON::Any)
+    emit.call(MCPC::JsonRpc::Response.success(request.id, result)) if result.is_a?(JSON::Any)
   rescue error : Fault
-    refusal = Mcpc::JsonRpc::ErrorObject.new(error.code, error.message || "", error.data)
-    emit.call(Mcpc::JsonRpc::Response.new(request.id, error: refusal))
+    refusal = MCPC::JsonRpc::ErrorObject.new(error.code, error.message || "", error.data)
+    emit.call(MCPC::JsonRpc::Response.new(request.id, error: refusal))
   end
 end

@@ -1,7 +1,7 @@
 # An in-memory transport wired to a `FakeServer`.
-class FakeTransport < Mcpc::Transport
-  getter sent = [] of {Mcpc::JsonRpc::Message, Headers}
-  getter aborted = [] of Mcpc::JsonRpc::Id
+class FakeTransport < MCPC::Transport
+  getter sent = [] of {MCPC::JsonRpc::Message, Headers}
+  getter aborted = [] of MCPC::JsonRpc::Id
   getter? opened = false
   getter? closed = false
 
@@ -17,13 +17,13 @@ class FakeTransport < Mcpc::Transport
     @opened = true
   end
 
-  def send(message : Mcpc::JsonRpc::Message, headers : Headers) : Nil
-    raise Mcpc::ConnectionClosedError.new if closed?
+  def send(message : MCPC::JsonRpc::Message, headers : Headers) : Nil
+    raise MCPC::ConnectionClosedError.new if closed?
     sent << {message, headers}
     spawn { @server.receive(message) }
   end
 
-  def abort(id : Mcpc::JsonRpc::Id) : Bool
+  def abort(id : MCPC::JsonRpc::Id) : Bool
     aborted << id
     aborts_requests?
   end
@@ -40,13 +40,13 @@ class FakeTransport < Mcpc::Transport
   end
 
   def headers_for(method : String) : Headers
-    sent.compact_map { |message, headers| headers if message.as?(Mcpc::JsonRpc::Request).try(&.method) == method }.last
+    sent.compact_map { |message, headers| headers if message.as?(MCPC::JsonRpc::Request).try(&.method) == method }.last
   end
 end
 
-def connected_client(server : FakeServer, config = fast_config, & : Mcpc::Client, FakeTransport ->)
+def connected_client(server : FakeServer, config = fast_config, & : MCPC::Client, FakeTransport ->)
   transport = FakeTransport.new(server)
-  client = Mcpc::Client.new(transport, config)
+  client = MCPC::Client.new(transport, config)
   yield client, transport
 ensure
   client.try(&.close)

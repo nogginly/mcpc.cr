@@ -1,12 +1,12 @@
-module Mcpc
+module MCPC
   # Something the server or the connection reported without being asked.
   # `Client#on_event` receives every one; match on the concrete type.
   #
   # ```
   # client.on_event do |event|
   #   case event
-  #   when Mcpc::Event::Progress     then puts "#{event.progress} of #{event.total}"
-  #   when Mcpc::Event::ToolsChanged then refresh_tools
+  #   when MCPC::Event::Progress     then puts "#{event.progress} of #{event.total}"
+  #   when MCPC::Event::ToolsChanged then refresh_tools
   #   end
   # end
   # ```

@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module JsonRpc
     # The requests still waiting for a response, keyed by id.
     class PendingCalls

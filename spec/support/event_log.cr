@@ -1,8 +1,8 @@
 # Records the events a client reports.
 class EventLog
-  getter events = [] of Mcpc::Event
+  getter events = [] of MCPC::Event
 
-  def initialize(client : Mcpc::Client)
+  def initialize(client : MCPC::Client)
     client.on_event { |event| events << event }
   end
 

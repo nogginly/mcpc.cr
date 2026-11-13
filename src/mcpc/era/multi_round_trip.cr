@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # Repeats a request for as long as the server answers "input required",
     # attaching the input it asked for each time.

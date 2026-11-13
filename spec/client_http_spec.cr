@@ -1,8 +1,8 @@
 require "./spec_helper"
 
-private def http_client(server : FakeServer, & : Mcpc::Client, HttpFakeServer ->)
+private def http_client(server : FakeServer, & : MCPC::Client, HttpFakeServer ->)
   HttpFakeServer.open(server) do |http|
-    client = Mcpc::Client.http(http.url, {"Authorization" => "Bearer secret"}, fast_config)
+    client = MCPC::Client.http(http.url, {"Authorization" => "Bearer secret"}, fast_config)
     begin
       yield client, http
     ensure
@@ -11,7 +11,7 @@ private def http_client(server : FakeServer, & : Mcpc::Client, HttpFakeServer ->
   end
 end
 
-describe "Mcpc::Client over Streamable HTTP" do
+describe "MCPC::Client over Streamable HTTP" do
   describe "with a stateless server" do
     it "discovers, then sends self-describing requests with routing headers" do
       server = FakeServer.modern
@@ -40,8 +40,8 @@ describe "Mcpc::Client over Streamable HTTP" do
         http.streaming = true
         log = EventLog.new(client)
         client.connect
-        client.call_tool("slow", options: Mcpc::RequestOptions.new(progress_token: "job-1")).text.should eq("done")
-        log.await(Mcpc::Event::Progress).total.should eq(2.0)
+        client.call_tool("slow", options: MCPC::RequestOptions.new(progress_token: "job-1")).text.should eq("done")
+        log.await(MCPC::Event::Progress).total.should eq(2.0)
       end
     end
 
@@ -51,7 +51,7 @@ describe "Mcpc::Client over Streamable HTTP" do
       http_client(server) do |client, http|
         http.error_statuses[-32602] = 400
         client.connect
-        expect_raises(Mcpc::RpcError, "Unknown tool: nope") { client.call_tool("nope") }
+        expect_raises(MCPC::RpcError, "Unknown tool: nope") { client.call_tool("nope") }
         server.requests_for("initialize").should be_empty
       end
     end
@@ -63,8 +63,8 @@ describe "Mcpc::Client over Streamable HTTP" do
       http_client(server) do |client, http|
         http.streaming = true
         client.connect
-        expect_raises(Mcpc::TimeoutError) do
-          client.call_tool("slow", options: Mcpc::RequestOptions.new(timeout: 50.milliseconds))
+        expect_raises(MCPC::TimeoutError) do
+          client.call_tool("slow", options: MCPC::RequestOptions.new(timeout: 50.milliseconds))
         end
         server.notifications.should be_empty
         hold.close
@@ -85,12 +85,12 @@ describe "Mcpc::Client over Streamable HTTP" do
         http.streaming = true
         log = EventLog.new(client)
         client.connect
-        subscription = client.subscribe(Mcpc::SubscriptionFilter.new(tools: true))
+        subscription = client.subscribe(MCPC::SubscriptionFilter.new(tools: true))
 
-        log.await(Mcpc::Event::ToolsChanged)
+        log.await(MCPC::Event::ToolsChanged)
         subscription.close
         sleep 20.milliseconds
-        log.of(Mcpc::Event::SubscriptionClosed).should be_empty
+        log.of(MCPC::Event::SubscriptionClosed).should be_empty
         server.notifications.should be_empty
         hold.close
       end
@@ -120,7 +120,7 @@ describe "Mcpc::Client over Streamable HTTP" do
       server = FakeServer.legacy
       HttpFakeServer.open(server) do |http|
         http.session_id = "session-1"
-        client = Mcpc::Client.http(http.url, config: fast_config)
+        client = MCPC::Client.http(http.url, config: fast_config)
         client.connect
         client.close
         http.http_methods.should contain("DELETE")
@@ -136,7 +136,7 @@ describe "Mcpc::Client over Streamable HTTP" do
         wait_until { http.http_methods.includes?("GET") }
 
         server.push("notifications/tools/list_changed")
-        log.await(Mcpc::Event::ToolsChanged)
+        log.await(MCPC::Event::ToolsChanged)
       end
     end
 
@@ -162,8 +162,8 @@ describe "Mcpc::Client over Streamable HTTP" do
       http_client(server) do |client, http|
         http.streaming = true
         client.connect
-        expect_raises(Mcpc::TimeoutError) do
-          client.call_tool("slow", options: Mcpc::RequestOptions.new(timeout: 50.milliseconds))
+        expect_raises(MCPC::TimeoutError) do
+          client.call_tool("slow", options: MCPC::RequestOptions.new(timeout: 50.milliseconds))
         end
         wait_until { server.notifications.map(&.method).includes?("notifications/cancelled") }
         hold.close
@@ -176,7 +176,7 @@ describe "Mcpc::Client over Streamable HTTP" do
     server.fail_with("server/discover", -32600, "Unauthorized")
     http_client(server) do |client, http|
       http.error_statuses[-32600] = 401
-      expect_raises(Mcpc::HttpError, "HTTP 401") { client.connect }
+      expect_raises(MCPC::HttpError, "HTTP 401") { client.connect }
       server.requests_for("initialize").should be_empty
     end
   end

@@ -1,4 +1,4 @@
-module McpcProbe
+module MCPCProbe
   # The command line asked for something that cannot be done.
   class UsageError < Exception
   end

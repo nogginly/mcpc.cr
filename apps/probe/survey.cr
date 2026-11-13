@@ -1,7 +1,7 @@
-module McpcProbe
+module MCPCProbe
   # Connects a client and collects everything the server advertises.
   class Survey
-    def initialize(@client : Mcpc::Client, @target : String)
+    def initialize(@client : MCPC::Client, @target : String)
     end
 
     # Never raises for a server's failings: they are recorded in the report.
@@ -16,11 +16,11 @@ module McpcProbe
     private def connect_and_collect(report : Report)
       report.server = server = @client.connect
       collect_lists(report, server.capabilities)
-    rescue error : Mcpc::Error
+    rescue error : MCPC::Error
       report.failure = Diagnosis.of(error)
     end
 
-    private def collect_lists(report : Report, capabilities : Mcpc::ServerCapabilities)
+    private def collect_lists(report : Report, capabilities : MCPC::ServerCapabilities)
       if capabilities.tools?
         report.sections << section("Tools") { @client.list_tools.map { |tool| Item.new(tool.name, tool.description) } }
       end
@@ -39,7 +39,7 @@ module McpcProbe
 
     private def section(title : String, & : -> Array(Item)) : Section
       Section.new(title, yield)
-    rescue error : Mcpc::Error
+    rescue error : MCPC::Error
       Section.new(title, error: Diagnosis.of(error))
     end
   end

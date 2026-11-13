@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Turns server notifications into events.
   module NotificationEvents
     # Returns the event for *notification*, or nil when it has none or is malformed.

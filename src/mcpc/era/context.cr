@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # How the client behaves differs by protocol era; each era is a `Strategy`.
   module Era
     # The collaborators every era strategy works with.

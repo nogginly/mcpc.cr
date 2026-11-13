@@ -1,29 +1,29 @@
 require "../spec_helper"
 
-private NO_HEADERS = Mcpc::Transport::Headers.new
+private NO_HEADERS = MCPC::Transport::Headers.new
 
-private def shell_transport(script : String, grace = 2.seconds) : Mcpc::Transport::Stdio
-  Mcpc::Transport::Stdio.new("sh", ["-c", script], stderr: Process::Redirect::Close, shutdown_grace: grace)
+private def shell_transport(script : String, grace = 2.seconds) : MCPC::Transport::Stdio
+  MCPC::Transport::Stdio.new("sh", ["-c", script], stderr: Process::Redirect::Close, shutdown_grace: grace)
 end
 
-private def collect_messages(transport : Mcpc::Transport) : Array(Mcpc::JsonRpc::Message)
-  messages = [] of Mcpc::JsonRpc::Message
+private def collect_messages(transport : MCPC::Transport) : Array(MCPC::JsonRpc::Message)
+  messages = [] of MCPC::JsonRpc::Message
   transport.on_message { |message| messages << message }
   messages
 end
 
-describe Mcpc::Transport::Stdio do
+describe MCPC::Transport::Stdio do
   it "writes one compact JSON line per message and reads replies line by line" do
     transport = shell_transport("cat")
     received = collect_messages(transport)
     transport.open
 
-    transport.send(Mcpc::JsonRpc::Notification.new("first", JSON.parse(%({"text":"a\\nb"}))), NO_HEADERS)
-    transport.send(Mcpc::JsonRpc::Notification.new("second"), NO_HEADERS)
+    transport.send(MCPC::JsonRpc::Notification.new("first", JSON.parse(%({"text":"a\\nb"}))), NO_HEADERS)
+    transport.send(MCPC::JsonRpc::Notification.new("second"), NO_HEADERS)
 
     wait_until { received.size == 2 }
-    received.map(&.as(Mcpc::JsonRpc::Notification).method).should eq(["first", "second"])
-    received.first.as(Mcpc::JsonRpc::Notification).params.should eq(JSON.parse(%({"text":"a\\nb"})))
+    received.map(&.as(MCPC::JsonRpc::Notification).method).should eq(["first", "second"])
+    received.first.as(MCPC::JsonRpc::Notification).params.should eq(JSON.parse(%({"text":"a\\nb"})))
   ensure
     transport.try(&.close)
   end
@@ -35,7 +35,7 @@ describe Mcpc::Transport::Stdio do
     transport.open
 
     wait_until { received.size == 1 }
-    received.first.as(Mcpc::JsonRpc::Notification).method.should eq("ready")
+    received.first.as(MCPC::JsonRpc::Notification).method.should eq("ready")
   ensure
     transport.try(&.close)
   end
@@ -59,21 +59,21 @@ describe Mcpc::Transport::Stdio do
     wait_until { closed }
     sleep 50.milliseconds
 
-    expect_raises(Mcpc::ConnectionClosedError) do
-      3.times { transport.send(Mcpc::JsonRpc::Notification.new("late"), NO_HEADERS) }
+    expect_raises(MCPC::ConnectionClosedError) do
+      3.times { transport.send(MCPC::JsonRpc::Notification.new("late"), NO_HEADERS) }
     end
   ensure
     transport.try(&.close)
   end
 
   it "raises TransportError when the command cannot be started" do
-    transport = Mcpc::Transport::Stdio.new("/no/such/mcp-server")
-    expect_raises(Mcpc::TransportError, "cannot start") { transport.open }
+    transport = MCPC::Transport::Stdio.new("/no/such/mcp-server")
+    expect_raises(MCPC::TransportError, "cannot start") { transport.open }
   end
 
   it "refuses to send before it is opened" do
-    expect_raises(Mcpc::ConnectionClosedError) do
-      shell_transport("cat").send(Mcpc::JsonRpc::Notification.new("early"), NO_HEADERS)
+    expect_raises(MCPC::ConnectionClosedError) do
+      shell_transport("cat").send(MCPC::JsonRpc::Notification.new("early"), NO_HEADERS)
     end
   end
 

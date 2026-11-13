@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # The 2026-07-28 revision: no handshake, every request describes itself,
     # and the server asks for input by having the request retried.

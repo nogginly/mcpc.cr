@@ -1,6 +1,6 @@
 require "http/client"
 
-module Mcpc
+module MCPC
   # Interprets one HTTP response to a POSTed JSON-RPC request.
   class Transport::HttpReply
     AUTH_STATUSES = {401, 403}

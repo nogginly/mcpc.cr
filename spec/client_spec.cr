@@ -24,7 +24,7 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
       server.on("prompts/list") { {"prompts" => [] of String, "nextCursor" => "stuck"} }
       connected_client(server) do |client|
         client.connect
-        expect_raises(Mcpc::ProtocolError, "repeated cursor") { client.list_prompts }
+        expect_raises(MCPC::ProtocolError, "repeated cursor") { client.list_prompts }
       end
     end
 
@@ -67,7 +67,7 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
       server.fail_with("tools/call", -32602, "Unknown tool: nope")
       connected_client(server) do |client|
         client.connect
-        expect_raises(Mcpc::RpcError, "Unknown tool: nope") { client.call_tool("nope") }.code.should eq(-32602)
+        expect_raises(MCPC::RpcError, "Unknown tool: nope") { client.call_tool("nope") }.code.should eq(-32602)
       end
     end
 
@@ -76,7 +76,7 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
       server.on("tools/list") { {"tools" => "many"} }
       connected_client(server) do |client|
         client.connect
-        expect_raises(Mcpc::ProtocolError, "tools/list") { client.list_tools }
+        expect_raises(MCPC::ProtocolError, "tools/list") { client.list_tools }
       end
     end
 
@@ -104,7 +104,7 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
         client.connect
         client.list_prompts.first.arguments.first.required?.should be_true
         message = client.get_prompt("review", {"lang" => "crystal"}).messages.first
-        message.content.as(Mcpc::TextContent).text.should eq("Review this crystal code")
+        message.content.as(MCPC::TextContent).text.should eq("Review this crystal code")
       end
     end
 
@@ -128,9 +128,9 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
       connected_client(server) do |client|
         log = EventLog.new(client)
         client.connect
-        client.call_tool("slow", options: Mcpc::RequestOptions.new(progress_token: "job-1"))
+        client.call_tool("slow", options: MCPC::RequestOptions.new(progress_token: "job-1"))
 
-        progress = log.await(Mcpc::Event::Progress)
+        progress = log.await(MCPC::Event::Progress)
         progress.token.should eq("job-1")
         progress.progress.should eq(50.0)
         progress.total.should eq(100.0)
@@ -151,11 +151,11 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
         server.push("notifications/message", {"level" => "warning", "logger" => "db", "data" => "slow query"})
 
         wait_until { log.events.size == 5 }
-        log.events.map(&.class).should eq([Mcpc::Event::ToolsChanged, Mcpc::Event::PromptsChanged,
-                                           Mcpc::Event::ResourcesChanged, Mcpc::Event::ResourceUpdated,
-                                           Mcpc::Event::LogMessage])
-        log.of(Mcpc::Event::ResourceUpdated).first.uri.should eq("file:///todo.md")
-        log.of(Mcpc::Event::LogMessage).first.level.should eq("warning")
+        log.events.map(&.class).should eq([MCPC::Event::ToolsChanged, MCPC::Event::PromptsChanged,
+                                           MCPC::Event::ResourcesChanged, MCPC::Event::ResourceUpdated,
+                                           MCPC::Event::LogMessage])
+        log.of(MCPC::Event::ResourceUpdated).first.uri.should eq("file:///todo.md")
+        log.of(MCPC::Event::LogMessage).first.level.should eq("warning")
       end
     end
 
@@ -164,7 +164,7 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
       server.on("tools/list") { {"tools" => [{"name" => "fresh", "inputSchema" => {"type" => "object"}}]} }
       connected_client(server) do |client|
         refreshed = [] of String
-        client.on_event { |event| refreshed.concat(client.list_tools.map(&.name)) if event.is_a?(Mcpc::Event::ToolsChanged) }
+        client.on_event { |event| refreshed.concat(client.list_tools.map(&.name)) if event.is_a?(MCPC::Event::ToolsChanged) }
         client.connect
 
         server.push("notifications/tools/list_changed")
@@ -192,8 +192,8 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
       server.on("tools/call") { FakeServer::SILENT }
       connected_client(server) do |client|
         client.connect
-        expect_raises(Mcpc::TimeoutError) do
-          client.call_tool("slow", options: Mcpc::RequestOptions.new(timeout: 30.milliseconds))
+        expect_raises(MCPC::TimeoutError) do
+          client.call_tool("slow", options: MCPC::RequestOptions.new(timeout: 30.milliseconds))
         end
       end
     end
@@ -214,8 +214,8 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
 
         transport.drop("server crashed")
 
-        failure.receive.should be_a(Mcpc::ConnectionClosedError)
-        log.await(Mcpc::Event::Disconnected).reason.should eq("server crashed")
+        failure.receive.should be_a(MCPC::ConnectionClosedError)
+        log.await(MCPC::Event::Disconnected).reason.should eq("server crashed")
       end
     end
 
@@ -227,21 +227,21 @@ private def describe_common_behaviour(era : String, &new_server : -> FakeServer)
 
         transport.closed?.should be_true
         sleep 10.milliseconds
-        log.of(Mcpc::Event::Disconnected).should be_empty
-        expect_raises(Mcpc::NotConnectedError) { client.list_tools }
+        log.of(MCPC::Event::Disconnected).should be_empty
+        expect_raises(MCPC::NotConnectedError) { client.list_tools }
       end
     end
   end
 end
 
-describe Mcpc::Client do
+describe MCPC::Client do
   describe_common_behaviour("handshake-era") { FakeServer.legacy }
   describe_common_behaviour("stateless") { FakeServer.modern }
 
   it "refuses to work before it is connected" do
-    client = Mcpc::Client.new(FakeTransport.new(FakeServer.new))
-    expect_raises(Mcpc::NotConnectedError) { client.list_tools }
-    expect_raises(Mcpc::NotConnectedError) { client.server }
+    client = MCPC::Client.new(FakeTransport.new(FakeServer.new))
+    expect_raises(MCPC::NotConnectedError) { client.list_tools }
+    expect_raises(MCPC::NotConnectedError) { client.server }
   end
 
   it "opens the transport and describes the server on connect" do
@@ -258,7 +258,7 @@ describe Mcpc::Client do
   end
 
   it "builds stdio and HTTP clients" do
-    Mcpc::Client.stdio("some-server", ["--flag"]).should be_a(Mcpc::Client)
-    Mcpc::Client.http("https://example.com/mcp", {"Authorization" => "Bearer x"}).should be_a(Mcpc::Client)
+    MCPC::Client.stdio("some-server", ["--flag"]).should be_a(MCPC::Client)
+    MCPC::Client.http("https://example.com/mcp", {"Authorization" => "Bearer x"}).should be_a(MCPC::Client)
   end
 end

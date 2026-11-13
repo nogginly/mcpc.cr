@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # The HTTP headers that mirror a 2026-07-28 request, so that proxies can
     # route it without reading the body.

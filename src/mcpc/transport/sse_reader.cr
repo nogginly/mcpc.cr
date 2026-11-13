@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # Reads a Server-Sent Events stream.
   class Transport::SseReader
     MESSAGE_EVENT = "message"

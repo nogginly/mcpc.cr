@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   module Era
     # What the client needs from a protocol era. One instance serves one
     # connection for its whole life.

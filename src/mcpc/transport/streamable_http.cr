@@ -1,7 +1,7 @@
 require "http/client"
 require "uri"
 
-module Mcpc
+module MCPC
   # Talks to a server's single MCP endpoint, one HTTP POST per message.
   #
   # A session id issued by a handshake-era server is remembered and sent on

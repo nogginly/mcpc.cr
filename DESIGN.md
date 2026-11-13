@@ -234,7 +234,7 @@ Connects to one server and reports what it advertises.
 ```mermaid
 flowchart LR
     A[Options] --> T[Target]
-    T --> C[Mcpc::Client]
+    T --> C[MCPC::Client]
     C --> S[Survey]
     S --> R[Report]
     R --> X{{--json?}}

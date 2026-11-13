@@ -1,4 +1,4 @@
-module Mcpc
+module MCPC
   # A server's question for the user, in form mode: `message` says what is
   # wanted and `requested_schema` describes the fields of the answer.
   # Both are written by the server; treat them as untrusted.
