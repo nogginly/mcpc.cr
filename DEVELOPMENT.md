@@ -54,6 +54,7 @@ Path                |Holds
 `spec/fixtures/`    |Example messages copied from the MCP specification
 `spec/integration/` |Specs against the real reference server
 `samples/`          |Runnable examples
+`scripts/`          |Scripts for watching the MCP specification
 `apps/`             |Command-line apps that ship with the shard, one folder each
 `spec/apps/`        |Their specs
 `references/`       |Notes on the protocol and the build brief
@@ -153,6 +154,36 @@ Reference server  |The integration specs, against `server-everything`    |Linux,
 3. Specs must run on Windows: start helper processes through `sh` found on the `PATH`, never by
    an absolute Unix path, and find fixtures with `fixture_paths`, because a glob pattern cannot
    hold Windows path separators.
+
+### Watching the specification
+
+`spec/upstream.lock` pins the commit of the
+[specification repository](https://github.com/modelcontextprotocol/modelcontextprotocol) the client
+was last checked against. Every Monday, `.github/workflows/spec-watch.yml` compares it with the
+latest commit and fails if anything the client depends on has changed.
+
+```mermaid
+flowchart TD
+    A[Weekly run] --> B{{New revision, or watched paths changed?}}
+    B -- no --> OK[Pass]
+    B -- yes --> F[Fail: summary lists what changed]
+    F --> R[Review the diff]
+    R --> C{{Does the client need to change?}}
+    C -- yes --> FIX[Fix the client]
+    C -- no --> U
+    FIX --> U[scripts/spec_update.sh]
+    U --> P[Pull request with the new pin and fixtures]
+```
+
+1. **Watched paths** are the schemas and the `basic/` docs of 2025-11-25 and 2026-07-28; they
+   are listed in `scripts/spec_common.sh`. A new directory under `schema/` also fails the run.
+2. **The draft revision** is reported in the run's summary but never fails it.
+3. **To acknowledge a change**, run `scripts/spec_update.sh`, which moves the pin to the latest
+   commit and copies its examples into `spec/fixtures/`. Run the specs, then commit both.
+4. **To check now**, run `scripts/spec_watch.sh` locally, or start the workflow by hand from the
+   Actions tab.
+5. **GitHub disables scheduled workflows** in a repository with no activity for 60 days. Re-enable
+   it from the Actions tab if that happens.
 
 ### Keeping the documents current
 
