@@ -30,10 +30,12 @@ describe "result types, read from the specification's examples" do
     result.structured_content.should_not be_nil
   end
 
-  it "reads a failed tool call as a result, not an error" do
-    result = MCPC::CallToolResult.from_json(fixture("CallToolResult", "invalid-tool-input-error"))
-    result.error?.should be_true
-    result.text.should_not be_empty
+  it "reads invalid tool arguments as a failed result, not an error" do
+    {"invalid-tool-input-error", "missing-required-argument-error"}.each do |name|
+      result = MCPC::CallToolResult.from_json(fixture("CallToolResult", name))
+      result.error?.should be_true
+      result.text.should_not be_empty
+    end
   end
 
   it "reads each kind of content block" do
